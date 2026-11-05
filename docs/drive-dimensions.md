@@ -24,6 +24,6 @@ The **32.78 : 1 reference ratio is not achieved by the 4.008 : 1 depicted drive*
 
 The `model` radii and teeth drive the bevel and V-belt motions, belt/drum contact path and key procedural meshes. `plant` drives the plant card, duty readouts and motor reference plate. Other stylized housing, fastener, guard, chute, idler and roller dimensions are **not** parametric. Changing the table alone does not regenerate a manufacturable assembly. Automated arithmetic and contact checks are in `tests/check-drive-spec.mjs`, with scene and mechanics checks in the other tests.
 
-## Two-deck extension
+## Conveyor scope
 
-The short upper infeed is a **second conceptual belt**, discharged toward the enclosed loading duct of the lower receiving incline. The 246 m plant reference describes the original inclined conveyor only. The feeder's drive, pulley dimensions, rated speed and transfer capacity are not established; motion is a direction indicator, not a synchronized factory drive. Its guardrails, bearing seals and lubrication points are illustrative and require structural, clearance and safety validation. The 20% slip switch changes on-screen belt distance relative to head-drum rotation, not the engineering motor selection.
+Only the inclined receiving conveyor is depicted. The transfer chute does not imply a second modeled conveyor or a known upstream plant layout. Its upstream equipment remains unspecified. The 20% slip switch changes the displayed belt travel relative to drum rotation for an educational comparison; it does not change the motor's rated selection.

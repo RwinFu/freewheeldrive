@@ -10,8 +10,8 @@ for (const [index, script] of scripts.entries()) {
 }
 const parts = html.slice(html.indexOf('const parts=['), html.indexOf('const LIB='));
 const count = [...parts.matchAll(/^\{id:'[^']+',num:'/gm)].length;
-assert.equal(count, 13, 'assembly part count changed; review labels and translations');
-assert.match(html, /var navail = document\.querySelectorAll\('#rail button'\)\.length \|\| 13/);
+assert.equal(count, 12, 'assembly part count changed; review labels and translations');
+assert.match(html, /var navail = document\.querySelectorAll\('#rail button'\)\.length \|\| 12/);
 assert.match(html, /k\('allParts', 'Complete assembly<small>\{n\} components/);
 assert.match(html, /'مجموعهٔ کامل<small>\{n\} قطعه/);
 assert.match(html, /r\[0\]==='123'\?/);
@@ -20,4 +20,6 @@ assert.match(html, /if\(panel\.open&&calibrated\)total\+=flow\*dt\/3600/);
 assert.match(html, /A=d\*88\/90,A1=d\*54\/90,B=d\*89\/90,H=d\*101\.6\/90,H1=d\*33\/90,L=d\*327\/90,J=d\*262\/90,N=d\*27\/90/);
 assert.equal((html.match(/ucpUnit\(n,s,'drum',[\d.\-]+,\.045,/g) || []).length, 3);
 assert.match(html, /Model Ø484 mm · plant ref\. Ø800 mm/);
+assert.doesNotMatch(parts, /id:'feeder'/);
+assert.doesNotMatch(html, /13_upper_infeed_transfer_deck/);
 console.log(`Validated ${scripts.length} scripts and ${count} assembly parts.`);

@@ -20,37 +20,30 @@ const assembly=runInNewContext(script.slice(begin,end)+'\ncreateAssembly(T,rende
  T:THREE,renderer:{capabilities:{getMaxAnisotropy:()=>8}},scene:new THREE.Scene(),
  document:canvasDoc,FreewheelClutchGeometry:clutchGeometry,FreewheelDriveSpec:context.FreewheelDriveSpec,FreewheelSway:swayContext.FreewheelSway,console
 });
-assert.equal(assembly.parts.length,13);
-assert.ok(assembly.parts.some(p=>p.id==='feeder'));
-assert.equal(assembly.feedRotor.length,2);
-assert.ok(assembly.feeder.getObjectByName('13_bearing_seal_and_grease_point_tail_left'));
-const feeding=new THREE.Box3().setFromObject(assembly.feeder);
-assert.ok(feeding.max.y>assembly.audit().tail[1]+.7,'feeder should be a separate upper deck');
-for(const end of ['tail','discharge']){
- const wrap=assembly.feeder.getObjectByName(`13_${end}_belt_wrap`);
- assert.ok(wrap,`missing ${end} belt wrap`);
- const bounds=new THREE.Box3().setFromObject(wrap);
- assert.ok(bounds.max.x-bounds.min.x>.08,'wrap must extend around drum in belt plane');
- assert.ok(bounds.max.z-bounds.min.z>.50,'wrap must span belt width along shaft');
- for(const side of ['left','right']){
-  const leg=assembly.feeder.getObjectByName(`13_floor_support_${end}_${side}`);
-  assert.ok(leg,`missing floor support ${end} ${side}`);
-  const floor=new THREE.Box3().setFromObject(leg);
-  assert.ok(floor.min.y>.02&&floor.min.y<.14,`support must reach floor: ${end} ${side}`);
- }
-}
-const feedBefore=assembly.feedMarker[0].position.x;
-assembly.animateFeeder(.27,false);
-assert.ok(Math.abs(assembly.feedRotor[0].rotation.x)>.2);
-assert.notEqual(assembly.feedMarker[0].position.x,feedBefore);
-assembly.animateFeeder(.27,true);
-const held=assembly.feedRotor[0].rotation.x;
-assembly.animateFeeder(.55,true);
-assert.equal(assembly.feedRotor[0].rotation.x,held);
-
-assert.equal(new Set(assembly.parts.map(p=>p.id)).size,13);
+assert.equal(assembly.parts.length,12);
+assert.equal(new Set(assembly.parts.map(p=>p.id)).size,12);
 assert.equal(assembly.audit().gearMesh.toothRatio,context.FreewheelDriveSpec.model.gearRatio);
 assert.equal(assembly.audit().bearings.length,6);
+for(const bearing of assembly.audit().bearings.filter(b=>b.part==='drum')){
+ assert.ok(Math.abs(bearing.bore-.09)<1e-9);
+ assert.ok(Math.abs(bearing.overallHeight-.2005)<1e-9,'SKF H2 envelope');
+ assert.ok(Math.abs(bearing.mountHoleDiameter-.027)<1e-9,'SKF N clearance');
+ assert.ok(Math.abs(bearing.mountBoltDiameter-.022)<1e-9,'SKF catalog attachment bolt');
+ assert.ok(bearing.mountBoltDiameter<bearing.mountHoleDiameter);
+}
+
+// Catalog-derived service features stay attached to existing parts; no fictitious train added.
+const sight=assembly.nodes.coupling.getObjectByName('02_coupling_oil_sight_glass_catalog_study');
+const vent=assembly.nodes.gearbox.getObjectByName('03_gearbox_breather_catalog_study');
+const drain=assembly.nodes.gearbox.getObjectByName('03_gearbox_oil_drain_catalog_study');
+for(const [label,part] of [['sight glass',sight],['breather',vent],['drain',drain]]){
+ assert.ok(part,`missing ${label}`);
+ const bounds=new THREE.Box3().setFromObject(part);
+ assert.ok(!bounds.isEmpty(),`${label} has no geometry`);
+ for(const value of [...bounds.min.toArray(),...bounds.max.toArray()])assert.ok(Number.isFinite(value));
+}
+
+assert.ok(!assembly.root.getObjectByName('13_upper_infeed_transfer_deck'));
 assert.ok(assembly.meshes.length>300);
 assert.equal(assembly.guards.name,'00_REMOVABLE_DRIVE_GUARDS_NOT_CERTIFIED');
 assert.ok(assembly.guards.getObjectByName('coupling_ventilated_guard'));
@@ -101,15 +94,17 @@ for(const pose of [
  assert.ok(a.loads.every(load=>load.position.every(Number.isFinite)));
  for(const p of assembly.parts){assembly.nodes[p.id].updateWorldMatrix(true,true);assert.ok(assembly.nodes[p.id].matrixWorld.elements.every(Number.isFinite));}
 }
-// A stalled feeder must not continue pouring through the receiving chute.
-assembly.animate({inputAngle:1,outputAngle:1,drumAngle:1,conveyorTravel:.4,lock:0,
- backstopInstalled:true,phase:'drive',time:1,feedHalted:true,feedStopTravel:.4});
-const stream=assembly.transport.parent.getObjectByName('07c_loading_stream');
-assert.ok(stream,'missing transfer stream');
-assert.ok(stream.children.every(child=>!child.visible),'feed stopped but transfer stream still active');
-assembly.animate({inputAngle:1,outputAngle:1,drumAngle:1,conveyorTravel:.4,lock:0,
- backstopInstalled:true,phase:'drive',time:1,feedHalted:false});
-assert.ok(stream.children.some(child=>child.visible),'flow should resume with the feeder');
+// The retained fault is on the original carrying idler, not an invented upper conveyor.
+const idler=assembly.root.getObjectByName('idler_center_roll_spin');
+assert.ok(idler,'missing carrying idler');
+const turn={inputAngle:3,outputAngle:1,drumAngle:.75,conveyorTravel:.15,lock:0,
+ backstopInstalled:true,phase:'drive',time:1};
+assembly.animate({...turn,idlerJam:false});
+const beforeJam=idler.rotation.x;
+assembly.animate({...turn,conveyorTravel:.30,idlerJam:true});
+assert.equal(idler.rotation.x,beforeJam,'jammed idler rotated with the moving belt');
+assembly.animate({...turn,conveyorTravel:.45,idlerJam:false});
+assert.notEqual(idler.rotation.x,beforeJam,'released idler did not resume rolling');
 // The same displacement bends the belt and the switch lever; the input is not just a dialog readout.
 const physics=swayContext.FreewheelSway;
 assert.equal(physics.evaluate(0,0).warning,false);
