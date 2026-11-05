@@ -1,0 +1,23 @@
+import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import { runInNewContext } from 'node:vm';
+const html=readFileSync(new URL('../freewheel-detailed.html',import.meta.url),'utf8');
+const scripts=[...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/g)].map(m=>m[1]);
+const context={module:{exports:{}}};runInNewContext(scripts[2],context);
+const {model:m,plant:p}=context.FreewheelDriveSpec;
+const near=(a,b,tol)=>assert.ok(Math.abs(a-b)<tol,`${a} differs from ${b}`);
+near(m.gearRatio,m.gearTeethOut/m.gearTeethIn,1e-12);
+near(m.totalRatio,m.gearRatio/m.beltRatio,1e-12);
+near(m.beltCenterRadius,m.headShellRadius+m.headLaggingThickness+m.beltThickness/2,1e-12);
+near(m.beltCenterRadius,m.tailLaggedRadius+m.beltThickness/2,1e-12);
+near(p.drumRpm,p.beltSpeed/(Math.PI*p.drumDiameter)*60,1e-12);
+near(p.totalRatio,p.motorRpm/p.drumRpm,1e-12);
+near(p.idealDrumTorqueKNm,p.motorPowerKw/(2*Math.PI*p.drumRpm/60),1e-12);
+near(p.idealBeltPullKN,p.motorPowerKw/p.beltSpeed,1e-12);
+near(p.rollbackMm,p.drumDiameter/2*p.backstopTakeupDegrees*Math.PI/180*1000,1e-12);
+assert.ok(m.totalRatio>4&&m.totalRatio<4.1);
+assert.ok(p.totalRatio>32&&p.totalRatio<33);
+assert.notEqual(m.totalRatio,p.totalRatio,'model and plant must not be presented as the same design');
+for(const id of ['modelGearRatio','modelBeltRatio','modelTotalRatio','plantCapacity','plantSpeed','plantDrum','plantRatio','plantTorque','plantRollback'])
+ assert.ok(html.includes(`id="${id}"`),`missing derived metric ${id}`);
+console.log(`Model ratio ${m.totalRatio.toFixed(3)}:1; plant ideal ratio ${p.totalRatio.toFixed(2)}:1 and drum ${p.drumRpm.toFixed(2)} rpm validated.`);

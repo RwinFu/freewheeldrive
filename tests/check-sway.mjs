@@ -8,6 +8,7 @@ const dom=new JSDOM(html,{url:'http://localhost/',runScripts:'outside-only',pret
 try{
  const {window}=dom,doc=window.document,events=[];
  window.addEventListener('fw:sway',e=>events.push(e.detail));
+ window.eval(scripts[2]); // Shared model/plant parameters.
  window.eval(scripts[3]); // Mechanics and shared switch geometry.
  window.eval(scripts.at(-1)); // Standalone educational instrument dialog.
  assert.equal(events.at(-1).latched,false);

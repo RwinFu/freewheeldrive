@@ -9,7 +9,7 @@ const scripts=[...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/g)].ma
 const context={module:{exports:{}}};
 runInNewContext(scripts[2],context);
 const clutchGeometry=context.module.exports;
-const swayContext={module:{exports:{}}};
+const swayContext={module:{exports:{}},FreewheelDriveSpec:context.FreewheelDriveSpec};
 runInNewContext(scripts[3],swayContext);
 const script=scripts.find(s=>s.includes('function createAssembly(T, renderer, scene) {'));
 const begin=script.indexOf('function createAssembly(T, renderer, scene) {');
@@ -18,22 +18,55 @@ assert.ok(begin>=0&&end>begin,'could not isolate scene constructor');
 const canvasDoc={createElement(name){assert.equal(name,'canvas');return createCanvas(512,512);},getElementById:()=>null};
 const assembly=runInNewContext(script.slice(begin,end)+'\ncreateAssembly(T,renderer,scene)',{
  T:THREE,renderer:{capabilities:{getMaxAnisotropy:()=>8}},scene:new THREE.Scene(),
- document:canvasDoc,FreewheelClutchGeometry:clutchGeometry,FreewheelSway:swayContext.FreewheelSway,console
+ document:canvasDoc,FreewheelClutchGeometry:clutchGeometry,FreewheelDriveSpec:context.FreewheelDriveSpec,FreewheelSway:swayContext.FreewheelSway,console
 });
 assert.equal(assembly.parts.length,12);
 assert.equal(new Set(assembly.parts.map(p=>p.id)).size,12);
-assert.equal(assembly.audit().gearMesh.toothRatio,3);
+assert.equal(assembly.audit().gearMesh.toothRatio,context.FreewheelDriveSpec.model.gearRatio);
 assert.equal(assembly.audit().bearings.length,6);
 assert.ok(assembly.meshes.length>300);
+assert.equal(assembly.guards.name,'00_REMOVABLE_DRIVE_GUARDS_NOT_CERTIFIED');
+assert.ok(assembly.guards.getObjectByName('coupling_ventilated_guard'));
+assert.ok(assembly.guards.getObjectByName('three_v_belt_mesh_guard'));
+const cageBounds=new THREE.Box3().setFromObject(assembly.guards.getObjectByName('three_v_belt_mesh_guard'));
+assert.ok(cageBounds.min.x<.3&&cageBounds.max.x>2.1);
+assert.ok(cageBounds.min.y<.5&&cageBounds.max.y>2.2);
+assert.ok(cageBounds.min.z<.9&&cageBounds.max.z>1.1);
+const couplingBounds=new THREE.Box3().setFromObject(assembly.guards.getObjectByName('coupling_ventilated_guard'));
+assert.ok(couplingBounds.min.x<-.3&&couplingBounds.max.x>.1);
+const takeups=['left','right'].map(side=>assembly.transport.getObjectByName(`07_tail_screw_takeup_${side}`));
+assert.ok(takeups.every(Boolean),'both named take-up assemblies must exist');
+for(const unit of takeups){
+ const box=new THREE.Box3().setFromObject(unit);
+ assert.ok(box.max.x-box.min.x>.4,'take-up rail must span the tail bearing');
+ assert.ok(box.max.y-box.min.y>.1,'take-up bracket must have vertical extent');
+}
+assert.ok(new THREE.Box3().setFromObject(takeups[0]).max.z < new THREE.Box3().setFromObject(takeups[1]).min.z);
+assert.match(html,/Static screw take-up study at the tail/);
+const guardBegin=script.indexOf('function updateVisibility(){');
+const guardFn=script.slice(guardBegin,script.indexOf('function setPressed(',guardBegin));
+assert.ok(guardFn.startsWith('function updateVisibility()'));
+for(const [guards,inside,isolate,explode,visible] of [
+ [true,false,false,0,true],[false,false,false,0,false],
+ [true,true,false,0,false],[true,false,true,0,false],[true,false,false,.5,false]
+]){
+ runInNewContext(guardFn+';updateVisibility()',{
+  A:assembly,PARTS:assembly.parts,S:{guards,inside,isolate,sel:'belt',noBackstop:false},expTarget:explode
+ });
+ assert.equal(assembly.guards.visible,visible,`wrong guard visibility for ${[guards,inside,isolate,explode]}`);
+}
+assembly.guards.visible=true;
 for(const p of assembly.parts){
  assert.ok(assembly.nodes[p.id],`missing node: ${p.id}`);
  assert.ok(!p.bounds.isEmpty(),`empty component: ${p.id}`);
  for(const value of [...p.bounds.min.toArray(),...p.bounds.max.toArray()])assert.ok(Number.isFinite(value),`invalid bounds: ${p.id}`);
 }
+const md=context.FreewheelDriveSpec.model;
+const drumTurn=md.beltRatio;
 for(const pose of [
- {inputAngle:3,outputAngle:1,drumAngle:.238/.318,conveyorTravel:.238/.318*.249,lock:0,backstopInstalled:true,phase:'drive',time:1},
+ {inputAngle:md.gearRatio,outputAngle:1,drumAngle:drumTurn,conveyorTravel:drumTurn*md.beltCenterRadius,lock:0,backstopInstalled:true,phase:'drive',time:1},
  {inputAngle:0,outputAngle:0,drumAngle:0,conveyorTravel:0,lock:1,backstopInstalled:true,phase:'locked',time:2},
- {inputAngle:-3,outputAngle:-1,drumAngle:-.238/.318,conveyorTravel:-.238/.318*.249,lock:0,backstopInstalled:false,phase:'runback',time:3}
+ {inputAngle:-md.gearRatio,outputAngle:-1,drumAngle:-drumTurn,conveyorTravel:-drumTurn*md.beltCenterRadius,lock:0,backstopInstalled:false,phase:'runback',time:3}
 ]){
  assembly.animate(pose);
  const a=assembly.audit();
