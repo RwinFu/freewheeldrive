@@ -1,1 +1,34 @@
-# freewheeldrive
+# Freewheel Drive
+
+Offline bilingual (English/Persian) interactive Three.js **concept visualization** of a cement-plant clinker belt drive. It includes a motor, fluid coupling, right-angle gearbox, V-belts, head drum, inclined conveyor and roller-ramp backstop, plus educational belt-scale and sway-switch simulations.
+
+**Published site:** https://rwinfu.github.io/freewheeldrive/
+
+## Run locally
+
+No build tools or network access are needed for the viewer. Open `index.html` or serve the folder:
+
+```sh
+python3 -m http.server 8000
+```
+
+Then visit `http://localhost:8000/`. The self-contained viewer is `freewheel-detailed.html`; `index.html` redirects to it.
+
+## Controls
+
+- Drag: orbit; Shift-drag: pan; wheel/pinch: zoom; click a part: inspect.
+- Space: play/pause; `I`: internal inspection; `L`: labels; `X`: explode; `H`: fit; `R`: reset; `1`–`3`: display styles.
+- Use **Export GLB** for a static mesh snapshot (not parametric CAD) and PNG for a view image.
+
+## Verification
+
+```sh
+npm ci
+npm test
+```
+
+The viewer itself needs no npm packages. The test-only dependencies build the complete Three.js scene without WebGL and check 12 part bounds and three motion poses (drive, lock and runback). The Pages workflow validates these checks before deploying. See [component audit](docs/component-audit.md) and [dimensional reference audit](docs/reference-audit.md) for what was checked and what remains unresolved.
+
+## Scope and limitations
+
+The 3D study is **not a production design, calibrated instrument or safety control**. Plant reference figures (for example Ø800 mm drum and 246 m conveyor) are not all the dimensions of the shortened 3D model (Ø484 mm visible drum). Rated torque, fatigue, guards, tolerances, real-world load paths, dust/thermal duty and collision clearances need engineering validation. Do not fabricate, operate or approve equipment based on this visualization.

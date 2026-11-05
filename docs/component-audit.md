@@ -19,4 +19,4 @@ This is a source/kinematic audit of the **illustrative** HTML scene, not a dimen
 
 ## Views / states to inspect manually
 
-Check overview, front, top and close-up inspection at assembled and exploded positions; cycle solid, X-ray, wireframe and bilingual labels; compare power-on, power-cut with installed backstop, removed-backstop runback and reinstall. There is no browser/WebGL binary in this environment, so those visual checks are **not** claimed as completed. Automated tests cover numerical states and script syntax only.
+Check overview, front, top and close-up inspection at assembled and exploded positions; cycle solid, X-ray, wireframe and bilingual labels; compare power-on, power-cut with installed backstop, removed-backstop runback and reinstall. A headless Three.js geometry test now constructs all 12 components (416 meshes), checks finite bounds and exercises drive, lock and runback poses without WebGL. Browser screenshot checks remain **unverified**: the available Chromium package cannot start here because system NSS libraries are missing. Numerical/geometry checks are not a substitute for multi-angle visual inspection.

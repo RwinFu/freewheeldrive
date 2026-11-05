@@ -1,1 +1,4 @@
 .venv/
+.tooling/
+
+node_modules/
