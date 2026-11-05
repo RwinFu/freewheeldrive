@@ -3560,6 +3560,29 @@ function ctex(w,h,fn,srgb){
   if(srgb)t.encoding=T.sRGBEncoding;return t;
 }
 const TX={};
+/* Shallow, repeatable micro-relief: height derivatives encoded as tangent-space normals.
+   No random frame-to-frame noise, and no extra mesh subdivisions or network assets. */
+function grainNormal(seed,amplitude){
+ const size=128,r=rng(seed),height=new Float32Array(size*size);
+ for(let i=0;i<height.length;i++)height[i]=r();
+ return ctex(size,size,(g,w,h)=>{
+  const im=g.createImageData(w,h),at=(x,y)=>height[((y+h)%h)*w+(x+w)%w];
+  for(let y=0;y<h;y++)for(let x=0;x<w;x++){
+   const dx=(at(x+1,y)-at(x-1,y))*amplitude,dy=(at(x,y+1)-at(x,y-1))*amplitude;
+   const inv=1/Math.hypot(dx,dy,1),i=(y*w+x)*4;
+   im.data[i]=Math.round(128-127*dx*inv);im.data[i+1]=Math.round(128-127*dy*inv);
+   im.data[i+2]=Math.round(128+127*inv);im.data[i+3]=255;
+  }g.putImageData(im,0,0);
+ });
+}
+TX.castNormal=grainNormal(89,.22);TX.rubberNormal=grainNormal(107,.38);
+TX.nameplate=ctex(512,256,(g,w,h)=>{
+ g.fillStyle='#a8b3af';g.fillRect(0,0,w,h);g.fillStyle='#25332e';g.fillRect(10,10,w-20,h-20);
+ g.strokeStyle='#d6c38d';g.lineWidth=4;g.strokeRect(22,22,w-44,h-44);
+ g.fillStyle='#e7e6d8';g.font='bold 35px Arial';g.fillText('FREEWHEEL / DRIVE',40,77);
+ g.fillStyle='#d6c38d';g.font='27px Arial';g.fillText('200 kW  ·  1487 rpm',40,127);
+ g.fillStyle='#b6c4bb';g.font='22px Arial';g.fillText('CONCEPT STUDY  /  NOT RATED',40,177);
+},true);
 TX.brushed=ctex(512,512,(g,w,h)=>{
   const r=rng(7);g.fillStyle='#d2d2d2';g.fillRect(0,0,w,h);
   for(let i=0;i<2600;i++){const v=140+r()*115|0;g.strokeStyle='rgba('+v+','+v+','+v+','+(.15+r()*.35)+')';g.lineWidth=.5+r()*1.4;
@@ -3663,7 +3686,7 @@ const INTERNAL_FINISH={steel:{c:0xd4dee7,m:.92,r:.23,map:'brushed',e:1.10},chrom
 /* Bearing steel and seals: polished, but deliberately outside the internal-finish set. */
 LIB.bearing={c:0xd9e4ed,m:.97,r:.14,map:'brushed',e:1.14};LIB.seal={c:0x1c2932,m:.20,r:.66};
 const mats={},allMats=[];
-function mat(part,key,h){const id=part+'|'+key+(h?'|h':'');if(mats[id])return mats[id];const interior=!h&&['freewheel','gearbox','coupling','motor'].includes(part)&&(!!INTERNAL_FINISH[key]||['machined','roller','hub'].includes(key)),d=interior?(INTERNAL_FINISH[key]||LIB[key]):LIB[key];const P={color:new T.Color(d.c).convertSRGBToLinear(),metalness:d.m,roughness:d.r,envMapIntensity:interior?d.e:(d.e===undefined?.66:d.e)};if(d.map==='brushed'||d.map==='cast')P.roughnessMap=TX[d.map];if(d.map==='wood')P.map=TX.wood;if(d.map==='clinker')P.map=TX.clinker;if(d.glass){P.transparent=true;P.opacity=.65;P.depthWrite=false;}const m=new T.MeshStandardMaterial(P);m.name=part+'_'+key;m.userData={part,housing:!!h,interiorFinish:interior,finishKey:key};m.emissive.setHex(0xd4b77a);m.emissiveIntensity=0;mats[id]=m;allMats.push(m);return m;}
+function mat(part,key,h){const id=part+'|'+key+(h?'|h':'');if(mats[id])return mats[id];const interior=!h&&['freewheel','gearbox','coupling','motor'].includes(part)&&(!!INTERNAL_FINISH[key]||['machined','roller','hub'].includes(key)),d=interior?(INTERNAL_FINISH[key]||LIB[key]):LIB[key];const P={color:new T.Color(d.c).convertSRGBToLinear(),metalness:d.m,roughness:d.r,envMapIntensity:interior?d.e:(d.e===undefined?.66:d.e)};if(d.map==='brushed'||d.map==='cast')P.roughnessMap=TX[d.map];if(d.map==='cast'||key==='paint'||key==='motor'){P.normalMap=TX.castNormal;P.normalScale=new T.Vector2(.12,.12);}if(key==='rubber'){P.normalMap=TX.rubberNormal;P.normalScale=new T.Vector2(.20,.20);}if(d.map==='wood')P.map=TX.wood;if(d.map==='clinker')P.map=TX.clinker;if(d.glass){P.transparent=true;P.opacity=.65;P.depthWrite=false;}const m=new T.MeshStandardMaterial(P);m.name=part+'_'+key;m.userData={part,housing:!!h,interiorFinish:interior,finishKey:key};m.emissive.setHex(0xd4b77a);m.emissiveIntensity=0;mats[id]=m;allMats.push(m);return m;}
 function beltMat(part,map){const tex=map.clone();tex.needsUpdate=true;const m=new T.MeshStandardMaterial({color:new T.Color(0x9baf91).convertSRGBToLinear(),roughness:.86,metalness:.03,map:tex,envMapIntensity:.3});m.name=part+'_belt';m.userData={part,housing:false};m.emissive.setHex(0xd4b77a);allMats.push(m);return m;}
 function dbl(m){m.side=T.DoubleSide;return m;}
 const _q=new T.Quaternion(),_e=new T.Euler(),_s1=new T.Vector3(1,1,1);
@@ -3726,6 +3749,8 @@ const GEAR=(function(){
   // terminal box
   M3(n,bx(0.2,0.09,0.17),mot,0.12,0.325,0);
   M3(n,bx(0.215,0.014,0.185),M('dark'),0.12,0.377,0);
+  const plate=new T.MeshStandardMaterial({map:TX.nameplate,metalness:.65,roughness:.42,side:T.DoubleSide});plate.name='motor_reference_nameplate';plate.userData={part:'motor',housing:false};allMats.push(plate);
+  M3(n,new T.PlaneGeometry(.155,.076).rotateX(-PI/2),plate,.12,.386,0);
   const sc=[];[[-1,-1],[1,-1],[-1,1],[1,1]].forEach(a=>sc.push({g:new T.CylinderGeometry(0.006,0.006,0.008,8),m:mt(0.12+a[0]*0.09,0.388,a[1]*0.075)}));
   M3(n,merge(sc),M('steel'));
   M3(n,new T.CylinderGeometry(0.022,0.022,0.06,16).rotateX(PI/2),M('dark'),0.12,0.325,0.11);
@@ -3893,7 +3918,12 @@ function ucpUnit(station,shaft,part,axial,boreRadius,drop,unitName,shaftKey){
 (function(){
  const n=node('drum','06_head_drum_and_driven_Z',HEAD.x,HEAD.y,-.45,AXIS_Z),M=(k,h)=>mat('drum',k,h),s=sgrp(n,'head_drum_rotation_Z');spin.drum=s;
  M3(s,cylX(.230,.66,64,true),dbl(M('steel',true)));[-1,1].forEach(v=>{M3(s,cylX(.226,.014,48),M('steel'),v*.323);M3(s,cylX(.083,.065,32),M('dark'),v*.36);});
- M3(s,cylX(.242,.635,64),M('rubber'));const rb=bx(.22,.005,.014);const hb=merge([{g:rb,m:mt(-.122,.2435,0,0,.55,0)},{g:rb,m:mt(.122,.2435,0,0,-.55,0)}]);M3(s,ringGeo(36,hb),M('rubber'));
+ M3(s,cylX(.242,.635,64),M('rubber'));
+ // Fasteners sit outside the 660 mm wide belt wrap, on the exposed drum end plates.
+ const endBolts=[];for(const end of [-1,1])for(let i=0;i<12;i++){
+  const a=TAU*i/12;endBolts.push({g:cylX(.009,.009,6),m:mt(end*.331,.169*Math.cos(a),.169*Math.sin(a))});
+ }
+ M3(s,merge(endBolts),M('steel'));const rb=bx(.22,.005,.014);const hb=merge([{g:rb,m:mt(-.122,.2435,0,0,.55,0)},{g:rb,m:mt(.122,.2435,0,0,-.55,0)}]);M3(s,ringGeo(36,hb),M('rubber'));
  M3(s,cylX(.045,2.23,36),M('chrome'),.565);M3(s,bx(.1,.009,.012),M('steel'),1.35,.049,0);buildPulley(s,'drum',.33,1.43);
  ucpUnit(n,s,'drum',-.50,.045,HEAD.y-.14,'06a_drive_end_pillow_block','drum');
  ucpUnit(n,s,'drum',.51,.045,HEAD.y-.14,'06b_head_shaft_pillow_block','drum');

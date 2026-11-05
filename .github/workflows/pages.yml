@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - arena/3889ac3b-freewheeldrive
   workflow_dispatch:
 
 permissions:
@@ -25,6 +24,14 @@ jobs:
     steps:
       - name: Check out site
         uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Validate scene and mechanics
+        run: |
+          npm ci
+          npm test
       - name: Prepare static site
         run: |
           mkdir -p _site
