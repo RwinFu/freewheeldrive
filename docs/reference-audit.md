@@ -2,7 +2,7 @@
 
 Reference: [SKF SYJ 90 TF product dimensional drawing/table](https://www.skf.com/products/mounted-bearings/ball-bearing-units/pillow-block-ball-bearing-units/productid-SYJ%2090%20TF) (consulted 2026-11-05).
 
-Catalog values (millimetres): bore d=90, base width A=88, top width A1=54, inner ring width B=89, centre height H=101.6, foot height H1=33, housing length L=327, bolt centres J=262, attachment-hole diameter N=27. The three head-drum bearing envelopes now follow these dimensions at the 90 mm bore; the shaft and bore radii match at 45 mm. Other model bearings reuse the same *proportions* at their own bore and are not catalog-matched products.
+Catalog values (millimetres): bore d=90, base width A=88, top width A1=54, inner ring width B=89, centre height H=101.6, foot height H1=33, housing length L=327, bolt centres J=262, attachment-hole diameter N=27, catalog attachment bolt diameter 22, and overall housing height H2=200.5. The three head-drum bearing envelopes now follow these dimensions at the 90 mm bore; the shaft and bore radii match at 45 mm. The head units now report an indicative 22 mm bolt within the 27 mm catalog clearance and a 200.5 mm H2 outer housing envelope; actual holes/slots and load-bearing fastening are not machined into this mesh. Other model bearings reuse the same *proportions* at their own bore and are not catalog-matched products.
 
 This is a concept visualization, **not** a bearing selection or approved fabrication drawing. Internal bearing geometry and supports remain stylized. Load ratings, shaft fits, mounting, seals, alignment and support stiffness require separate engineering verification.
 
