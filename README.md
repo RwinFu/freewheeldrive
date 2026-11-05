@@ -28,7 +28,13 @@ npm ci
 npm test
 ```
 
-The viewer itself needs no npm packages. The test-only dependencies build the complete Three.js scene without WebGL and check 12 part bounds and three motion poses (drive, lock and runback). The Pages workflow validates these checks before deploying. See [drive dimensions and ratios](docs/drive-dimensions.md), [component audit](docs/component-audit.md) and [dimensional reference audit](docs/reference-audit.md) for what was checked and what remains unresolved.
+The viewer itself needs no npm packages. The test-only dependencies build the complete Three.js scene without WebGL and check 13 part bounds and three motion poses (drive, lock and runback). The Pages workflow validates these checks before deploying. See [drive dimensions and ratios](docs/drive-dimensions.md), [component audit](docs/component-audit.md) and [dimensional reference audit](docs/reference-audit.md) for what was checked and what remains unresolved.
+
+## Two-deck concept and fault studies
+
+An independently represented **upper short feed deck** discharges through an enclosed transfer duct into the existing inclined receiving conveyor. The feeder is a selectable/explodable component with distinct drums, shaft seal/grease-point studies, frame, guardrailed access platform and animated feed markers. Its geometry is an illustrative layout: no second motor, sizing, capacity, real controls, stopping-distance calculation, or verified structural clearances are implied. The receiving conveyor remains the only plant-duty reference train.
+
+The gravity panel exposes educational **feeder/idler jam** (the upper feed markers and one receiving idler stop), **20% belt slip** (belt travel and idler/tail motion decouple from head-drum rotation), and the existing **power-cut/backstop** demonstration. Pausing animation is not a model of braking. There is no real jam/slip detector or certified interlock. In the selected-part card, every part has separate "visible model" and "plant reference" rows, using "not specified" where reference data is missing.
 
 ## Scope and limitations
 
