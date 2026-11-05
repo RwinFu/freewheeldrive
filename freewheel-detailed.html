@@ -205,7 +205,7 @@ THE SOFTWARE.
   </header>
   <aside id="sidebar" aria-label="Assembly components of the clinker belt drive">
     <div class="side-heading"><span>ASSEMBLY TREE</span><b>10</b><button id="bCloseParts" class="icon-btn square mobile-only" aria-label="Close component list"><svg><use href="#i-close"/></svg></button></div>
-    <button id="bAll" class="all-parts on"><svg><use href="#i-cube"/></svg><span>Complete assembly<small>10 components · clinker duty</small></span><i>●</i></button>
+    <button id="bAll" class="all-parts on"><svg><use href="#i-cube"/></svg><span>Complete assembly<small>12 components · clinker duty</small></span><i>●</i></button>
     <nav id="rail" aria-label="Select a component"></nav>
     <div class="telemetry"><div class="section-caption">KINEMATIC MONITOR <span>LIVE</span></div><div class="state-line"><i id="statusDot"></i><strong id="driveStatus">Starting</strong><span id="statusTime">00:00</span></div><div class="speed-grid"><div><span>INPUT</span><b id="rpmIn">0.0</b><small>visual rpm</small></div><div><span>OUTPUT</span><b id="rpmOut">0.0</b><small>visual rpm</small></div></div><div class="ratio-line"><span>GEAR RATIO</span><strong>3 : 1</strong></div><div class="ratio-line"><span>BELT RATIO</span><strong>0.748 : 1</strong></div><div class="test-line"><span>ROLLBACK</span><strong id="rollback">0.00°</strong></div>
     <div class="plant-ref"><div class="section-caption">PLANT REFERENCE <span>CLINKER DUTY</span></div>
@@ -222,7 +222,7 @@ THE SOFTWARE.
   <main id="stage" aria-label="Interactive three-dimensional assembly">
     <canvas id="gl" tabindex="0" aria-label="3D drive station. Drag to orbit, Shift-drag to pan, scroll to zoom. Press question mark for help."></canvas>
     <div class="stage-shade" aria-hidden="true"></div>
-    <div class="viewport-head"><button id="bParts" class="mini-btn mobile-only" aria-expanded="false" aria-controls="sidebar"><svg><use href="#i-parts"/></svg>Parts <span>10</span></button><div class="view-label"><i></i><span id="viewName">COMPLETE ASSEMBLY</span><b id="viewMode">PERSPECTIVE</b></div><div class="viewport-tools"><button id="bLabels" class="mini-icon on" aria-label="Toggle component labels" aria-pressed="true" title="Component labels · L"><svg><use href="#i-label"/></svg></button><button id="bFit" class="mini-icon" title="Fit current view · H" aria-label="Fit current view"><svg><use href="#i-home"/></svg></button><select id="quality" aria-label="Rendering quality" title="Rendering quality"><option value="balanced">Balanced</option><option value="high">High quality</option><option value="low">Low / fast</option></select></div></div>
+    <div class="viewport-head"><button id="bParts" class="mini-btn mobile-only" aria-expanded="false" aria-controls="sidebar"><svg><use href="#i-parts"/></svg>Parts <span>12</span></button><div class="view-label"><i></i><span id="viewName">COMPLETE ASSEMBLY</span><b id="viewMode">PERSPECTIVE</b></div><div class="viewport-tools"><button id="bLabels" class="mini-icon on" aria-label="Toggle component labels" aria-pressed="true" title="Component labels · L"><svg><use href="#i-label"/></svg></button><button id="bFit" class="mini-icon" title="Fit current view · H" aria-label="Fit current view"><svg><use href="#i-home"/></svg></button><select id="quality" aria-label="Rendering quality" title="Rendering quality"><option value="balanced">Balanced</option><option value="high">High quality</option><option value="low">Low / fast</option></select></div></div>
     <div id="labels" aria-label="Component annotations"></div>
     <div id="leaderLines" aria-hidden="true"></div>
     <aside id="card" aria-label="Selected component" inert>
@@ -2578,7 +2578,7 @@ THE SOFTWARE.
 (function(global){
  'use strict';
  function create(options){
-  const cfg=Object.assign({ratio:3,driverRadius:.238,drivenRadius:.318,beltRadius:.251,inputOmega:6,rollbackLimit:Math.PI/90,step:1/120,inclineAngle:18*Math.PI/180,gravity:9.81,inertiaFactor:.25,drag:1.2,maxReverseOmega:4.2},options);
+  const cfg=Object.assign({ratio:3,driverRadius:.238,drivenRadius:.318,beltRadius:.249,inputOmega:6,rollbackLimit:Math.PI/90,step:1/120,inclineAngle:18*Math.PI/180,gravity:9.81,inertiaFactor:.25,drag:1.2,maxReverseOmega:4.2},options);
   for(const key of Object.keys(cfg))if(!Number.isFinite(cfg[key])||(key==='inclineAngle'?cfg[key]<0||cfg[key]>=Math.PI/2:cfg[key]<=0))throw new RangeError('Invalid mechanical parameter: '+key);
   const equivalentRadius=cfg.driverRadius/cfg.drivenRadius*cfg.beltRadius;
   const gravityAlpha=cfg.gravity*Math.sin(cfg.inclineAngle)*cfg.inertiaFactor/equivalentRadius;
@@ -2807,7 +2807,7 @@ const api=Object.freeze({create});if(typeof module!=='undefined'&&module.exports
   k('treeTitle', 'ASSEMBLY TREE', 'درخت مجموعه');
   k('closeParts', 'Close component list', 'بستن فهرست قطعات');
   k('allParts', 'Complete assembly<small>{n} components · clinker duty</small>',
-    'مجموعهٔ کامل<small>۱۰ قطعه · کاربرد کلینکر</small>');
+    'مجموعهٔ کامل<small>{n} قطعه · کاربرد کلینکر</small>');
   k('railAria', 'Select a component', 'انتخاب یک قطعه');
   k('monitorTitle', 'KINEMATIC MONITOR <span>LIVE</span>', 'پایش سینماتیک <span>زنده</span>');
   k('inp', 'INPUT', 'ورودی');
@@ -2833,7 +2833,7 @@ const api=Object.freeze({create});if(typeof module!=='undefined'&&module.exports
   k('stageAria', 'Interactive three-dimensional assembly', 'مجموعهٔ سه‌بعدی تعاملی');
   k('canvasAria', '3D drive station. Drag to orbit, Shift-drag to pan, scroll to zoom. Press question mark for help.',
     'ایستگاه درایو سه‌بعدی. بکشید تا بچرخد، با Shift بکشید تا جابه‌جا شود، با اسکرول زوم کنید. برای راهنما علامت سؤال را بزنید.');
-  k('partsBtn', 'Parts <span>12</span>', 'قطعات <span>۱۲</span>');
+  k('partsBtn', 'Parts <span>{n}</span>', 'قطعات <span>{n}</span>');
   k('labelsTitle', 'Component labels · L', 'برچسب قطعات · L');
   k('labelsAria', 'Toggle component labels', 'نمایش یا پنهان کردن برچسب قطعات');
   k('fitTitle', 'Fit current view · H', 'تنظیم نما · H');
@@ -2956,8 +2956,8 @@ const api=Object.freeze({create});if(typeof module!=='undefined'&&module.exports
     'موتور روشن است؛ بستر کلینکر با ۴۵۰ تن بر ساعت روی شیب ۱۸ درجه بالا می‌رود.');
   k('msgCoasting', 'Power removed; the weight component of the clinker bed on the incline is driving the train backwards.',
     'برق قطع شد؛ مؤلفهٔ وزن بستر کلینکر روی شیب، درایو را در جهت برگشت می‌راند.');
-  k('msgEngaging', 'The rollers move back into the narrowing wedge; the 2° play (≈14 mm of belt travel) is closing.',
-    'رولرها در اثر برگشت به سمت گوهٔ تنگ می‌روند؛ ۲ درجه لقی (حدود ۱۴ میلی‌متر حرکت نوار) در حال بسته‌شدن است.');
+  k('msgEngaging', 'The rollers move into the wedge; model take-up is 2° at the backstop shaft (≈6.5 mm of model belt travel).',
+    'رولرها به سمت گوه می‌روند؛ لقی مدل روی محور بک‌استاپ ۲ درجه (حدود ۶٫۵ میلی‌متر حرکت نوار مدل) است.');
   k('msgLocked', 'The rollers are wedged between ramp and outer race; the torque arm grounds the reverse torque and the load is held.',
     'رولرها بین رمپ و رینگ بیرونی قفل شدند؛ گشتاور برگشت از بازوی گشتاور زمین‌گیر می‌شود و بار نگه داشته شد.');
   k('msgRunback', 'The backstop has been removed: belt and clinker bed run backwards. In a real plant that means spillage at the transfer, a plugged chute and damage to belt and drum.',
@@ -3105,7 +3105,7 @@ const api=Object.freeze({create});if(typeof module!=='undefined'&&module.exports
       specs: [['Rollers', 'رولرها', '10 × Ø46 mm (study scale)', '۱۰ عدد × Ø۴۶ میلی‌متر (مقیاس مطالعه)'],
         ['Ramp / take-up', 'رمپ / لقی', '5° ramp · 2° take-up', 'رمپ ۵ درجه · لقی ۲ درجه'],
         ['Hold torque (reference)', 'گشتاور نگهداشت (مرجع)', '≈ 42 kN·m at the drum', '≈ ۴۲ کیلونیوتون‌متر در درام'],
-        ['Rollback budget', 'بودجهٔ برگشت', '2° ≈ 14 mm of belt travel', '۲ درجه ≈ ۱۴ میلی‌متر حرکت نوار'],
+        ['Rollback budget', 'بودجهٔ برگشت', 'Model: 2° at backstop shaft ≈ 6.5 mm belt travel', 'مدل: ۲ درجه روی محور بک‌استاپ ≈ ۶٫۵ میلی‌متر حرکت نوار'],
         ['Cement duty', 'کاربرد سیمان', 'Dust sealing, grease, 60–120 °C', 'آب‌بندی غبار، گریس، ۶۰ تا ۱۲۰ درجه']]
     },
     pulley: {
@@ -3121,11 +3121,11 @@ const api=Object.freeze({create});if(typeof module!=='undefined'&&module.exports
     drum: {
       short: ['Head drum', 'درام اصلی'],
       label: ['Head drum, lagging & bearings', 'درام اصلی، آج و یاتاقان‌ها'],
-      sub: ['Ø800 mm · diamond lagging · 3 pillow blocks', 'Ø۸۰۰ میلی‌متر · آج الماسی · ۳ یاتاقان'],
-      specs: [['Shell / lagging', 'پوسته / آج', 'Ø800 mm · 12 mm diamond rubber', 'Ø۸۰۰ · لاستیک الماسی ۱۲ میلی‌متر'],
-        ['Drum speed', 'سرعت درام', '45.4 rpm at 1.9 m/s', '۴۵٫۴ دور بر دقیقه در ۱٫۹ متر بر ثانیه'],
+      sub: ['Model Ø484 mm · plant ref. Ø800 mm', 'مدل Ø۴۸۴ · مرجع کارخانه Ø۸۰۰ میلی‌متر'],
+      specs: [['Shell / lagging', 'پوسته / آج', 'Model Ø484 mm · plant ref. Ø800 mm (not to scale)', 'مدل Ø۴۸۴ · مرجع Ø۸۰۰ میلی‌متر (بدون مقیاس یکسان)'],
+        ['Drum speed', 'سرعت درام', 'Plant reference: 45.4 rpm at Ø800 mm / 1.9 m/s', 'مرجع کارخانه: ۴۵٫۴ دور بر دقیقه برای Ø۸۰۰ و ۱٫۹ متر بر ثانیه'],
         ['Belt pull (reference)', 'کشش نوار (مرجع)', '≈ 105 kN', '≈ ۱۰۵ کیلونیوتون'],
-        ['Shaft bearings', 'یاتاقان‌های محور', '3 × UCP-type pillow block', '۳ عدد UCP'],
+        ['Shaft bearings', 'یاتاقان‌های محور', '3 × 90 mm bore · SYJ 90 TF envelope (reference only)', '۳ عدد با قطر محور ۹۰ میلی‌متر · ابعاد بیرونی SYJ 90 TF (مرجع)'],
         ['Dust', 'غبار', 'Labyrinth + felt seal at bearing ends', 'لا بی‌رینت + آب‌بند نمدی در انتهای یاتاقان']]
     },
     conveyor: {
@@ -3449,12 +3449,12 @@ const api=Object.freeze({create});if(typeof module!=='undefined'&&module.exports
       }
     }
     /* component count: read it from the tree so it can never go stale */
-    var navail = document.querySelectorAll('#rail button').length || 10;
+    var navail = document.querySelectorAll('#rail button').length || 12;
     var ntext = lang === 'fa' ? String(navail).replace(/[0-9]/g, function (d) { return '۰۱۲۳۴۵۶۷۸۹'[d]; }) : String(navail);
     var small = document.querySelector('#bAll small');
-    if (small && small.textContent.indexOf('{n}') >= 0) small.textContent = small.textContent.replace('{n}', ntext);
+    if (small) small.textContent = small.textContent.replace('{n}', ntext);
     var pbtn = document.querySelector('#bParts > span');
-    if (pbtn && pbtn.textContent.indexOf('{n}') >= 0) pbtn.textContent = pbtn.textContent.replace('{n}', ntext);
+    if (pbtn) pbtn.textContent = ntext;
     var tcount = document.querySelector('.side-heading b');
     if (tcount) tcount.textContent = ntext;
 
@@ -3620,15 +3620,15 @@ const parts=[
 {id:'freewheel',num:'04',label:'Roller backstop',short:'Roller backstop',sub:'Grounded · flat ramps · spring plungers',axis:'Z',explode:[.12,1.00,.55],anchor:[0,.30,0],
  desc:'Ten rollers sit between a cylindrical outer race held by a torque arm and true flat inner ramps. Each compression spring is seated on the wide side of its pocket in a fixed guide and pushes a rounded plunger toward the narrowing wedge: forward motion compresses the spring, reversal releases it into contact. This is the part that keeps 450 t/h of clinker on the incline when the power fails.',
  fa:'ده رولر بین رینگ بیرونی ثابت (مهارشده با بازوی گشتاور) و رمپ‌های تخت داخلی قرار دارند. هر فنر فشاری در سمت باز جیب، در یک راهنمای ثابت نشسته و پیستون گرد را به سمت گوهٔ تنگ می‌راند: حرکت رو به جلو فنر را فشرده می‌کند و برگشت، آن را رها می‌کند تا رولر در گوه قفل شود. همین قطعه است که در قطع برق، ۴۵۰ تن بر ساعت کلینکر را روی شیب ۱۸ درجه نگه می‌دارد.',
- specs:[['Rollers','10 × Ø46 mm (study scale)'],['Ramp / take-up','5° ramp · 2° take-up'],['Hold torque (reference)','≈ 42 kN·m at the drum'],['Rollback budget','2° ≈ 14 mm of belt travel'],['Cement duty','Dust sealing, grease, 60–120 °C']]},
+ specs:[['Rollers','10 × Ø46 mm (study scale)'],['Ramp / take-up','5° ramp · 2° take-up'],['Hold torque (reference)','≈ 42 kN·m at the drum'],['Rollback budget','Model: 2° at backstop shaft ≈ 6.5 mm belt travel'],['Cement duty','Dust sealing, grease, 60–120 °C']]},
 {id:'pulley',num:'05',label:'Three-groove drive pulley',short:'Drive pulley',sub:'Keyed to gearbox output · 3 coplanar V-belts',axis:'Z',explode:[.50,.28,1.04],anchor:[0,.30,0],
  desc:'Three V-grooves carry matched belts on the gearbox output shaft; the driven grooves live on the head-drum shaft in exactly the same three belt planes, so no belt run is twisted. On a clinker drive this tertiary belt set is the cheapest wear item in the train and the first place slip appears when the backstop or a bearing starts dragging.',
  fa:'سه شیار V روی محور خروجی گیربکس، سه رشته تسمهٔ هم‌جنس را حمل می‌کند و شیارهای متحرک روی محور درام اصلی دقیقاً در همان سه صفحه قرار دارند؛ هیچ مسیر تسمه‌ای پیچیده نیست. در درایو کلینکر، همین مجموعهٔ تسمه ارزان‌ترین قطعهٔ فرسودنی است و نخستین جایی است که لغزش نشان می‌دهد.',
  specs:[['Outside / pitch Ø','500 / 476 mm'],['Groove centers','Z 935 / 980 / 1025 mm'],['Driven pitch Ø','636 mm'],['Outboard bearing','1 × UCP-type pillow block'],['Watch','Belt-matched set, tension, dust in grooves']]},
-{id:'drum',num:'06',label:'Head drum, lagging & bearings',short:'Head drum',sub:'Ø800 mm · diamond lagging · 3 pillow blocks',axis:'Z',explode:[1.18,.32,-.02],anchor:[.12,.35,0],
- desc:'The driven pulley and the head drum share one shaft. Rubber diamond lagging sits inside the belt wrap, three UCP-type pillow blocks support the extended drive end, and the sphered outer ring stays with the pedestal while the inner ring, ball set and cage turn with the shaft. At 1.9 m/s and 45.4 rpm the drum carries roughly 105 kN of belt pull, all of it reversed for an instant when the backstop engages.',
- fa:'پولی متحرک و درام اصلی روی یک محور مشترک هستند. لاستیک آج‌دار الماسی داخل دور پیچ نوار قرار دارد، سه یاتاقان از نوع UCP انتهای درایو را نگه می‌دارند، رینگ بیرونی کروی با پایه ثابت است و رینگ داخلی، ساچمه‌ها و قفسه با محور می‌چرخند. در سرعت ۱٫۹ متر بر ثانیه و ۴۵٫۴ دور بر دقیقه، درام حدود ۱۰۵ کیلونیوتن کشش نوار را تحمل می‌کند که هنگام درگیری بک‌استاپ، لحظه‌ای معکوس می‌شود.',
- specs:[['Shell / lagging','Ø800 mm · 12 mm diamond rubber'],['Drum speed','45.4 rpm at 1.9 m/s'],['Belt pull (reference)','≈ 105 kN'],['Shaft bearings','3 × UCP-type pillow block'],['Dust','Labyrinth + felt seal at bearing ends']]},
+{id:'drum',num:'06',label:'Head drum, lagging & bearings',short:'Head drum',sub:'Model Ø484 mm · plant ref. Ø800 mm',axis:'Z',explode:[1.18,.32,-.02],anchor:[.12,.35,0],
+ desc:'The driven pulley and the head drum share one shaft. Rubber diamond lagging sits inside the belt wrap, three UCP-type pillow blocks support the extended drive end, and the sphered outer ring stays with the pedestal while the inner ring, ball set and cage turn with the shaft. The Ø800 mm, 1.9 m/s, 45.4 rpm and 105 kN figures describe a separate illustrative plant reference, not the Ø484 mm visible drum or a rated load case.',
+ fa:'پولی متحرک و درام اصلی روی یک محور مشترک هستند. لاستیک آج‌دار الماسی داخل دور پیچ نوار قرار دارد، سه یاتاقان از نوع UCP انتهای درایو را نگه می‌دارند، رینگ بیرونی کروی با پایه ثابت است و رینگ داخلی، ساچمه‌ها و قفسه با محور می‌چرخند. اعداد Ø۸۰۰ میلی‌متر، ۱٫۹ متر بر ثانیه، ۴۵٫۴ دور بر دقیقه و ۱۰۵ کیلونیوتن فقط مرجع نمایشی کارخانه‌اند؛ درام نمایشی Ø۴۸۴ میلی‌متر است و بار واقعی آن تأیید نشده است.',
+ specs:[['Shell / lagging','Model Ø484 mm · plant ref. Ø800 mm (not to scale)'],['Drum speed','Plant reference: 45.4 rpm at Ø800 mm / 1.9 m/s'],['Belt pull (reference)','≈ 105 kN'],['Shaft bearings','3 × 90 mm bore · SYJ 90 TF envelope (reference only)'],['Dust','Labyrinth + felt seal at bearing ends']]},
 {id:'conveyor',num:'07',label:'Inclined clinker belt',short:'Clinker belt',sub:'Troughed 35° idlers · 18° incline · 246 m (ref.)',axis:'+X / +Y uphill',explode:[-.28,1.14,-.60],anchor:slopePoint(-.78,1.67,-.45).toArray(),
  desc:'A troughed belt carries a continuous clinker bed up the 18° incline on three-roll carrying idlers, with single return idlers on the slack run. The belt runs inside a welded box-truss gallery: two truss planes, web members and lateral bracing in both planes, a maintenance walkway with handrail, and fabricated support towers. Cutting power lets gravity back-drive the belt; compare the installed backstop with the removed-backstop case. The model belt is 3.8 m between drum centres; the reference plant belt is about 246 m with a 76 m lift.',
  fa:'نوار تغاری با بستر پیوستهٔ کلینکر، روی سه‌غلتکی‌های ۳۵ درجه، بار را از شیب ۱۸ درجه بالا می‌برد و در مسیر برگشت روی غلتک‌های برگشت تک‌رول می‌نشیند. کل نوار داخل یک گالری خرپایی جوشی اجرا می‌شود: دو صفحهٔ خرپا با اعضای مورب و بادبند افقی در هر دو صفحه، راه‌رو تعمیراتی با نرده، و سه برج تکیه‌گاهی ساختگی تا روی شاسی. با قطع برق، وزن بار نوار را به عقب می‌گرداند؛ حالت با بک‌استاپ را با حالت حذف بک‌استاپ مقایسه کنید. فاصلهٔ مرکز تا مرکز درام در مدل ۳٫۸ متر و در مرجع کارخانه حدود ۲۴۶ متر با ۷۶ متر ارتفاع است.',
@@ -3828,13 +3828,14 @@ function buildPulley(parent,part,outer,axial){
  for(const c of [-.045,0,.045])profile.push([outer,c-.016],[outer-.030,c-.004],[outer-.030,c+.004],[outer,c+.016]);profile.push([outer,.075],[inner,.075],[inner,-.075]);M3(parent,lathe(profile,64),dbl(M('cast',true)),axial||0);
  const sh=new T.Shape();sh.absarc(0,0,inner+.003,0,TAU,false);const h=new T.Path();h.absarc(0,0,.069,0,TAU,true);sh.holes.push(h);for(let i=0;i<6;i++){const a=i/6*TAU,hole=new T.Path();hole.absarc(inner*.64*Math.cos(a),inner*.64*Math.sin(a),outer*.115,0,TAU,true);sh.holes.push(hole);}const geo=new T.ExtrudeGeometry(sh,{depth:.025,bevelEnabled:false,curveSegments:16});geo.translate(0,0,-.0125);geo.rotateY(PI/2);M3(parent,geo,M('cast',true),axial||0);M3(parent,lathe([[.049,-.082],[.075,-.082],[.075,.082],[.049,.082],[.049,-.082]],40),M('steel'),axial||0);
 }
-/* UCP-type plummer (pillow) block. Proportions follow an SKF UCP 214/218 (70 / 90 mm bore) scaled
-   to the modelled shaft, so it is a UCP-STYLE unit, not a UCP 205 and not a rated selection.
+/* Pillow block outer envelope follows SKF SYJ 90 TF catalog dimensions, scaled to the
+   modelled bore (d=90, A=88, B=89, H=101.6, H1=33, L=327, J=262, N=27 mm).
+   Internal race, seals and bolts remain illustrative; not a rated bearing selection.
    Function: housing and sphered outer ring stay with the frame; the extended inner ring, ball set,
    cage and seals turn with the shaft, the cage at the epicyclic ratio for a stationary outer ring. */
 const bearingUnits=[];
 function ucpUnit(station,shaft,part,axial,boreRadius,drop,unitName,shaftKey){
- const d=2*boreRadius,A=d,A1=.575*d,B=1.066*d,H=1.13*d,H1=.40*d,L=3.71*d,J=2.95*d,N=.33*d;
+ const d=2*boreRadius,A=d*88/90,A1=d*54/90,B=d*89/90,H=d*101.6/90,H1=d*33/90,L=d*327/90,J=d*262/90,N=d*27/90;
  const Rs=.89*d,Rout=1.13*d,dm=1.39*d,Dw=.229*d,Bo=.34*d,s1=.63*d,B4=.135*d,d1=1.24*d,Z=8;
  const cageRatio=(1-Dw/dm)/2,ballRatio=-cageRatio*dm/Dw,ballLocalRatio=ballRatio-cageRatio,M=k=>mat(part,k);
  const st=sgrp(station,unitName+'_station_fixed',axial,0,0),ro=sgrp(shaft,unitName+'_inner_ring_rotating',axial,0,0);
@@ -3885,18 +3886,18 @@ function ucpUnit(station,shaft,part,axial,boreRadius,drop,unitName,shaftKey){
  for(const a of [0,2*PI/3])screws.push({g:new T.CylinderGeometry(.075*d,.075*d,screwLen,8),m:mt(screwAxial,(boreRadius+screwLen/2)*Math.cos(a),(boreRadius+screwLen/2)*Math.sin(a),a,0,0)});
  tag(M3(ro,merge(screws),M('dark')),'inner');
  const unit={station:st,rot:ro,cage,balls,cageRatio,ballRatio,ballLocalRatio,shaftKey,unitName,part,axial,bore:d,
-  outerDiameter:2*Rs,dm,Dw,balls2:Z,footLength:L,footWidth:A,centreHeight:H,overallHeight:H+H1+Rout};
+  outerDiameter:2*Rs,dm,Dw,balls2:Z,footLength:L,footWidth:A,centreHeight:H,overallHeight:H+Rout};
  bearingUnits.push(unit);return unit;
 }
 (function(){const n=node('pulley','05_three_groove_driver_Z',.55,.72,.98,AXIS_Z);const s=sgrp(n,'driver_pulley_rotation_Z');spin.pulley=s;buildPulley(s,'pulley',.25,0);ucpUnit(n,s,'pulley',.24,.047,.58,'05_outboard_pillow_block','pulley');})();
 (function(){
  const n=node('drum','06_head_drum_and_driven_Z',HEAD.x,HEAD.y,-.45,AXIS_Z),M=(k,h)=>mat('drum',k,h),s=sgrp(n,'head_drum_rotation_Z');spin.drum=s;
  M3(s,cylX(.230,.66,64,true),dbl(M('steel',true)));[-1,1].forEach(v=>{M3(s,cylX(.226,.014,48),M('steel'),v*.323);M3(s,cylX(.083,.065,32),M('dark'),v*.36);});
- M3(s,cylX(.239,.635,64),M('rubber'));const rb=bx(.22,.005,.014);const hb=merge([{g:rb,m:mt(-.122,.2405,0,0,.55,0)},{g:rb,m:mt(.122,.2405,0,0,-.55,0)}]);M3(s,ringGeo(36,hb),M('rubber'));
- M3(s,cylX(.046,2.23,36),M('chrome'),.565);M3(s,bx(.1,.009,.012),M('steel'),1.35,.049,0);buildPulley(s,'drum',.33,1.43);
- ucpUnit(n,s,'drum',-.50,.046,HEAD.y-.14,'06a_drive_end_pillow_block','drum');
- ucpUnit(n,s,'drum',.51,.046,HEAD.y-.14,'06b_head_shaft_pillow_block','drum');
- ucpUnit(n,s,'drum',1.62,.046,HEAD.y-.14,'06c_pulley_outboard_pillow_block','drum');
+ M3(s,cylX(.242,.635,64),M('rubber'));const rb=bx(.22,.005,.014);const hb=merge([{g:rb,m:mt(-.122,.2435,0,0,.55,0)},{g:rb,m:mt(.122,.2435,0,0,-.55,0)}]);M3(s,ringGeo(36,hb),M('rubber'));
+ M3(s,cylX(.045,2.23,36),M('chrome'),.565);M3(s,bx(.1,.009,.012),M('steel'),1.35,.049,0);buildPulley(s,'drum',.33,1.43);
+ ucpUnit(n,s,'drum',-.50,.045,HEAD.y-.14,'06a_drive_end_pillow_block','drum');
+ ucpUnit(n,s,'drum',.51,.045,HEAD.y-.14,'06b_head_shaft_pillow_block','drum');
+ ucpUnit(n,s,'drum',1.62,.045,HEAD.y-.14,'06c_pulley_outboard_pillow_block','drum');
  M3(n,bx(1.25,.055,.08),M('dark'),1.065,-.70,0);beamBetween(n,new T.Vector3(.51,-HEAD.y+.35,0),new T.Vector3(1.62,-.23,0),.045,.065,M('dark'));
 })();
 /* Common external tangents, ordered in the material travel direction. */
@@ -3931,7 +3932,7 @@ function troughBelt(path,zc,thickness,tile,transLen){
  return g;
 }
 function beamBetween(parent,a,b,width,depth,material){const direction=new T.Vector3().subVectors(b,a),mesh=M3(parent,bx(width,direction.length(),depth),material);mesh.position.copy(a).add(b).multiplyScalar(.5);mesh.quaternion.setFromUnitVectors(new T.Vector3(0,1,0),direction.normalize());return mesh;}
-const conveyorPath=twoPulleyPath({x:-1.9,y:.98},{x:1.9,y:.98},.251,.251,48),convTile=conveyorPath.length/68;
+const conveyorPath=twoPulleyPath({x:-1.9,y:.98},{x:1.9,y:.98},.249,.249,48),convTile=conveyorPath.length/68;
 let transport;
 (function(){
  const n=node('conveyor','07_inclined_conveyor_and_payloads',0,0,0),M=(k,h)=>mat('conveyor',k,h),z=-.45;
@@ -4006,12 +4007,12 @@ let transport;
  });
  /* Three-roll troughed idler sets. Each roll spins about its own tilted axis: the set frame is
     tilted about the belt axis and the rotor turns about its local X, exactly like the flat model. */
- const idR=.082,idQ=new T.Quaternion().setFromAxisAngle(new T.Vector3(0,1,0),AXIS_Z),beltUnderside=.98+.251-.014/2;
+ const idR=.082,idQ=new T.Quaternion().setFromAxisAngle(new T.Vector3(0,1,0),AXIS_Z),beltUnderside=.98+.249-.014/2;
  function idlerRoll(set,name,y,z,tilt,len){
    const frame=sgrp(set,name,0,y,z);
    frame.quaternion.setFromAxisAngle(new T.Vector3(1,0,0),tilt).multiply(idQ);
    const rotor=sgrp(frame,name+'_spin');M3(rotor,cylX(idR,len,20),M('steel'));M3(rotor,cylX(idR*.62,len*.98,14),M('dark'));
-   idlerRotors.push(rotor);return rotor;
+   rotor.userData.contactRadius=idR;idlerRotors.push(rotor);return rotor;
  }
  /* Impact idlers are spaced 0.28 m under the load zone, carrying idlers 0.55 m. */
  const idlerStations=[-1.34,-1.06,-.78,-.30,.25,.80,1.30];
@@ -4036,18 +4037,18 @@ let transport;
  const retMat=mat('conveyor','steel',false).clone();retMat.color=new T.Color(0x8d968c).convertSRGBToLinear();
  retMat.roughness=.62;retMat.metalness=.72;retMat.name='conveyor_return_idler';
  retMat.userData={part:'conveyor',housing:false,role:'returnIdler',finishKey:'steel'};allMats.push(retMat);
- const idRR=.062, retY=.98-.251-.007-idRR, retStations=[-1.32,-.90,-.48,-.06,.36,.78,1.20];
+ const idRR=.062, retY=.98-.249-.007-idRR, retStations=[-1.32,-.90,-.48,-.06,.36,.78,1.20];
  retStations.forEach((x,i)=>{
    const f=sgrp(transport,'return_idler_'+String(i+1).padStart(2,'0'),x,retY,z);f.rotation.y=AXIS_Z;
    const rotor=sgrp(f,'return_idler_spin');
    M3(rotor,cylX(idRR,.58,18),retMat);M3(rotor,cylX(idRR*.70,.60,12),M('dark'));
-   idlerRotors.push(rotor);
+   rotor.userData.contactRadius=idRR;idlerRotors.push(rotor);
    [-1,1].forEach(sd=>{
      M3(transport,bx(.042,retY-TR_BOT+.030,.026),M('paint'),x,(retY+TR_BOT)/2,z+sd*.34);
      M3(transport,bx(.070,.026,.070),M('steel'),x,TR_BOT+.020,z+sd*.34);
    });
  });
- const tailFrame=sgrp(transport,'tail_drum_axis_Z',-1.9,.98,z);tailFrame.rotation.y=AXIS_Z;const tail=sgrp(tailFrame,'tail_drum_rotation_Z');M3(tail,cylX(.243,.65,48),M('rubber'));M3(tail,cylX(.035,1.03,24),M('chrome'));spin.tail=tail;
+ const tailFrame=sgrp(transport,'tail_drum_axis_Z',-1.9,.98,z);tailFrame.rotation.y=AXIS_Z;const tail=sgrp(tailFrame,'tail_drum_rotation_Z');M3(tail,cylX(.242,.65,48),M('rubber'));M3(tail,cylX(.035,1.03,24),M('chrome'));spin.tail=tail;
  /* Tail shaft bearings sit outboard of the side frames on welded brackets, UCP-type units. */
  [-1,1].forEach(sd=>{const railOuter=z+sd*(.386+.0185),bearingZ=z+sd*.45;
   M3(transport,bx(.24,.18,.012),M('cast'),-1.9,.94,railOuter+sd*.006);
@@ -4232,7 +4233,7 @@ const instrumentation=(function(){
   /* Frame constants re-stated here because the truss block above is a closed scope. */
   const zB=-.45, TZ=.40, TCH=.052, TR_TOP=1.045, TR_BOT=.58;
   const CHORD_TOP=TR_TOP+TCH/2, CHORD_BOTTOM=TR_BOT+TCH/2, CHORD_LOW=TR_BOT-TCH/2;
-  const idR=.082, beltU=.98+.251-.014/2;
+  const idR=.082, beltU=.98+.249-.014/2;
   const sideLen=(TR.half-TR.flat)/Math.cos(TR.angle), midW=TR.flat+Math.cos(TR.angle)*sideLen/2;
   const wingY=beltU+Math.max(0,midW-TR.flat)*Math.tan(TR.angle)-idR/Math.cos(TR.angle);
   const SC={
@@ -4286,7 +4287,7 @@ const instrumentation=(function(){
     const frame=sgrp(set,name,0,y,z);
     frame.quaternion.setFromAxisAngle(new T.Vector3(1,0,0),tilt).multiply(q0);
     const rotor=sgrp(frame,name+'_spin');M3(rotor,cylX(idR,len,20),SC.idler);M3(rotor,cylX(idR*.62,len*.98,14),SC.cell);
-    idlerRotors.push(rotor);return rotor;
+    rotor.userData.contactRadius=idR;idlerRotors.push(rotor);return rotor;
   }
   weighRoll('weigh_idler_center_roll',beltU-idR,0,0,2*TR.flat+.02);
   weighRoll('weigh_idler_wing_roll_p',wingY,midW,-TR.angle,sideLen*.92);
@@ -4306,7 +4307,7 @@ const instrumentation=(function(){
   beamBetween(sN,new T.Vector3(.66,1.010,zB-TZ-.055),new T.Vector3(.615,.990,zB-TZ-.070),.011,.011,SC.cable);
   beamBetween(sN,new T.Vector3(.505,.975,zB-TZ-.070),new T.Vector3(.505,.945,zB-TZ-.072),.011,.011,SC.cable);
   /* speed sensor: friction wheel on the return strand, between two return idlers, +Z side */
-  const SPR=-1.11, retY=.98-.251-.007-.062, retBelt=retY+.062, wheelR=.075;
+  const SPR=-1.11, retY=.98-.249-.007-.062, retBelt=retY+.062, wheelR=.075;
   M3(sN,bx(.160,.014,.100),SC.speed,SPR,CHORD_BOTTOM+.007,zB+TZ);
   M3(sN,bx(.055,.062,.050),SC.speed,SPR,CHORD_BOTTOM+.045,zB+TZ);
   beamBetween(sN,new T.Vector3(SPR,CHORD_BOTTOM+.030,zB+TZ),new T.Vector3(SPR,retBelt-wheelR,zB+.300),.026,.026,SC.speed);
@@ -4395,7 +4396,7 @@ function animate(motion){
  // turns against the output train so the bevel pair rolls together at its pitch point (see audit).
  const am=-motion.inputAngle,ao=-motion.outputAngle,ad=-motion.drumAngle;
  spin.motor.rotation.x=am;spin.coupling.rotation.x=am;spin.gbIn.rotation.x=am;spin.gbOut.rotation.x=ao;spin.freewheel.rotation.x=ao;spin.pulley.rotation.x=ao;spin.drum.rotation.x=ad;spin.tail.rotation.x=ad;
- for(const r of idlerRotors)r.rotation.x=ad*.251/.082;
+ for(const r of idlerRotors)r.rotation.x=ad*.249/r.userData.contactRadius;
  for(const item of instrumentation.levers){
    const el=document.getElementById(item.carry?'isCarry':'isReturn');
    const deviation=el?Number(el.value)||0:0;
@@ -4438,7 +4439,7 @@ function audit(){
    centre:u.station.getWorldPosition(new T.Vector3()).toArray(),
    axis:new T.Vector3(1,0,0).transformDirection(u.station.matrixWorld).toArray(),
    housingNode:u.station.name,innerRingNode:u.rot.name,cageNode:u.cage.name})),centerRise:3.8*SS,head:[HEAD.x,HEAD.y,-.45],tail:slopePoint(-1.9,.98,-.45).toArray(),clutch:{...lastPose,pushY:CC.pushY,pushZ:CC.pushZ,anchorY:CC.anchorY,anchorZ:CC.anchorZ,rollerRadius:CC.rollerRadius,outerRaceRadius:CC.raceRadius,pockets:rollers.map(o=>({center:o.ro.position.toArray(),nose:o.nose.position.toArray(),springStart:o.sp.position.toArray(),springLength:o.sp.scale.z*.020,anchor:o.guide.position.toArray(),guideDirection:new T.Vector3(1,0,0).applyQuaternion(o.guide.quaternion).toArray(),cellAngle:o.g.rotation.x,guideStopGap:(o.shoulder.position.y-CC.anchorY)*CC.pushY+(o.shoulder.position.z-CC.anchorZ)*CC.pushZ-CC.plungerShoulderHalfLength-CC.guideFrontDistance}))},loads:crates.map(c=>({position:c.getWorldPosition(new T.Vector3()).toArray(),up:new T.Vector3(0,1,0).transformDirection(c.matrixWorld).toArray(),beltNormalClearance:c.position.y-c.userData.loadHeight/2-1.238})),normalRepairs:geometryAudit.normalRepairs};}
-return{root,nodes,spin,parts,instrumentation,materials:allMats,meshes,tagMat,animate,setLock,drivePath,conveyorPath,geometryAudit,clutch,audit,transport,crates,constants:{inputHeight:.72,driverRadius:.238,drivenRadius:.318,beltRadius:.251,rollerRadius:CC.rollerRadius,raceInnerRadius:CC.raceRadius,inclineAngle:SLOPE,releasedAngle:CC.releasedAngle,wedgeAngle:CC.wedgeAngle},textures:TX,inspectionRollers:rollers,bearingUnits,gear:GEAR};
+return{root,nodes,spin,parts,instrumentation,materials:allMats,meshes,tagMat,animate,setLock,drivePath,conveyorPath,geometryAudit,clutch,audit,transport,crates,constants:{inputHeight:.72,driverRadius:.238,drivenRadius:.318,beltRadius:.249,rollerRadius:CC.rollerRadius,raceInnerRadius:CC.raceRadius,inclineAngle:SLOPE,releasedAngle:CC.releasedAngle,wedgeAngle:CC.wedgeAngle},textures:TX,inspectionRollers:rollers,bearingUnits,gear:GEAR};
 }
 
 const A=createAssembly(T,renderer,scene),PARTS=A.parts,PMAP=Object.fromEntries(PARTS.map(p=>[p.id,p]));
@@ -4566,7 +4567,7 @@ $('bLabels').addEventListener('click',()=>{S.labels=!S.labels;refreshUI();});$('
 $('bHelp').addEventListener('click',()=>{$('help').showModal();});$('bHelpClose').addEventListener('click',()=>$('help').close());$('help').addEventListener('click',e=>{if(e.target===$('help')){const b=$('help').getBoundingClientRect();if(e.clientX<b.left||e.clientX>b.right||e.clientY<b.top||e.clientY>b.bottom)$('help').close();}});
 function clearPreset(active){document.querySelectorAll('[data-view]').forEach(b=>b.classList.toggle('on',b.dataset.view===active));$('viewMode').textContent=t('viewPerspective');}
 for(const b of document.querySelectorAll('[data-view]'))b.addEventListener('click',()=>{S.auto=false;setPressed('bAuto',false);const v=b.dataset.view;cam.taz=v==='front'?0:HOME.az;cam.tel=v==='top'?PI/2-.015:v==='front'?.005:HOME.el;fitView();document.querySelectorAll('[data-view]').forEach(x=>x.classList.toggle('on',x===b));$('viewMode').textContent=(v==='iso'?t('viewPerspective'):(v==='front'?t('vFront'):t('vTop'))+' · '+t('viewPerspective'));});
-window.addEventListener('keydown',e=>{if(e.ctrlKey||e.altKey||e.metaKey||e.repeat)return;if($('help').open)return;if(e.target.closest('input,select,textarea,[contenteditable="true"]'))return;if(e.code==='Space'&&e.target.closest('button'))return;const key=e.key.toLowerCase();if(e.code==='Space'){e.preventDefault();S.play=!S.play;refreshUI();}else if(key==='escape'){setPartsOpen(false);selectPart(null);}else if(key==='r')resetAll();else if(key==='h')fitView();else if(key==='i')toggleInside();else if(key==='l'){S.labels=!S.labels;refreshUI();}else if(key==='x')setExplode(expTarget>.5?0:1);else if(['1','2','3'].includes(key))setRender({1:'solid',2:'xray',3:'wire'}[key]);else if(key==='?')$('help').showModal();});
+window.addEventListener('keydown',e=>{if(e.ctrlKey||e.altKey||e.metaKey||e.repeat)return;if($('help').open||$('maker').open||$('instPanel').open)return;if(e.target.closest('input,select,textarea,[contenteditable="true"]'))return;if(e.code==='Space'&&e.target.closest('button'))return;const key=e.key.toLowerCase();if(e.code==='Space'){e.preventDefault();S.play=!S.play;refreshUI();}else if(key==='escape'){setPartsOpen(false);selectPart(null);}else if(key==='r')resetAll();else if(key==='h')fitView();else if(key==='i')toggleInside();else if(key==='l'){S.labels=!S.labels;refreshUI();}else if(key==='x')setExplode(expTarget>.5?0:1);else if(['1','2','3'].includes(key))setRender({1:'solid',2:'xray',3:'wire'}[key]);else if(key==='?')$('help').showModal();});
 /* Camera framing uses actual corner projections, not hard-coded browser dimensions. */
 let viewW=1,viewH=1;
 function compactCard(){return innerWidth<=760&&innerHeight>560;}
@@ -4732,7 +4733,7 @@ function buildShortcuts(){
   var box=document.getElementById('shortcuts'); if(!box) return;
   var rows=[['Space','scPlay'],['I','scInspect'],['L','scLabels'],['X','scExplode'],['H','scFit'],['R','scReset'],['123','scRender'],['Esc','scClose']];
   box.innerHTML=rows.map(function(r){
-    var keys=r[0]==='1'?'<kbd>1</kbd><kbd>2</kbd><kbd>3</kbd>':'<kbd>'+r[0]+'</kbd>';
+    var keys=r[0]==='123'?'<kbd>1</kbd><kbd>2</kbd><kbd>3</kbd>':'<kbd>'+r[0]+'</kbd>';
     return '<span>'+keys+' '+TT.t(r[1])+'</span>';
   }).join('');
 }
@@ -4814,19 +4815,20 @@ function redrawLanguage(){ $('instOpen').textContent=w('open');$('isTitle').text
 function angles(d){return [Math.atan(Math.max(0,-d-25)/66)*180/Math.PI,Math.atan(Math.max(0,d-25)/66)*180/Math.PI];}
 function raw(){return (val('isLoad',0,180)+2)*1.05;}
 function status(){const a=[...angles(val('isCarry',-150,150)),...angles(val('isReturn',-150,150))];let failure=$('isPower').value!=='on'||$('isFault').value!=='ok';let trip=failure||a.some(x=>x>=45);if(trip)latched=true;return{a,failure,trip};}
-function update(dt){const st=status(),speed=latched?0:val('isSpeed',0,5),net=scale!==null?Math.max(0,(raw()-zero)*scale):Math.max(0,raw()-2),flow=net/.55*speed*3.6;total+=flow*dt/3600;
+function update(dt){const st=status(),speed=latched?0:val('isSpeed',0,5),calibrated=scale!==null,net=calibrated?Math.max(0,(raw()-zero)*scale):null,flow=calibrated?net/.55*speed*3.6:null;
+ if(panel.open&&calibrated)total+=flow*dt/3600;
  const names=['CARRY L','CARRY R','RETURN L','RETURN R'];$('isContacts').textContent=st.a.map((x,i)=>names[i]+'  '+x.toFixed(1)+'°   '+(x>=45?w('tripped'):x>=12?w('alarm'):w('normal'))+'   ALARM '+(x>=12?'ON':'OFF')+'  NC '+(x>=45?'OPEN':'CLOSED')).join('\n');
  $('isState').textContent=st.failure?w('faultMsg'):latched?w('trip'):st.a.some(x=>x>=12)?w('warn'):w('clearance');$('isState').classList.toggle('bad',latched||st.failure);
- const cell=(raw()/2/200)*20; $('isScaleRead').textContent='LC1 '+cell.toFixed(3)+' mV   |   LC2 '+cell.toFixed(3)+' mV\nNET '+net.toFixed(2)+' kg  ('+(scale===null?w('notCal'):w('calibrated'))+')\nSPEED '+speed.toFixed(2)+' m/s'+(latched?' ('+w('speedStopped')+')':'')+'\nFLOW '+flow.toFixed(2)+' t/h\nTOTAL '+total.toFixed(4)+' t';}
+ const cell=(raw()/2/200)*20; $('isScaleRead').textContent='LC1 '+cell.toFixed(3)+' mV   |   LC2 '+cell.toFixed(3)+' mV\nNET '+net.toFixed(2)+' kg  ('+(scale===null?w('notCal'):w('calibrated'))+')\nSPEED '+speed.toFixed(2)+' m/s'+(latched?' ('+w('speedStopped')+')':'')+'\nFLOW '+(calibrated?flow.toFixed(2):'—')+' t/h\nTOTAL '+total.toFixed(4)+' t';}
 function message(k){msgKey=k;$('isMessage').textContent=w(k)}
 $('isZero').onclick=()=>{if(val('isLoad',0,180)>.001){message('zeroFail');return;}zero=raw();scale=null;message('zeroOk');update(0)};
 $('isCal').onclick=()=>{let load=val('isLoad',0,180),test=val('isSpan',0,180);if(zero===null||load<=0||test<=0||Math.abs(load-test)>.001||raw()-zero<.01){message('spanFail');return;}scale=test/(raw()-zero);message('spanOk');update(0)};
 $('isReset').onclick=()=>{let st=status();if(st.failure||st.a.some(x=>x>=12)){message('resetNo')}else{latched=false;message('resetOK')}update(0)};
 $('isTotalReset').onclick=()=>{total=0;message('totalOk');update(0)};
 panel.querySelectorAll('input,select').forEach(el=>el.addEventListener('input',()=>update(0)));
-$('instOpen').onclick=()=>{if(!panel.open)panel.showModal();update(0)};$('isClose').onclick=()=>panel.close();
+$('instOpen').onclick=()=>{if(!panel.open)panel.showModal();last=performance.now();update(0)};$('isClose').onclick=()=>panel.close();
 new MutationObserver(redrawLanguage).observe(document.documentElement,{attributes:true,attributeFilter:['lang']});redrawLanguage();
-setInterval(()=>{let now=performance.now(),dt=Math.max(0,Math.min((now-last)/1000,1));last=now;update(dt)},250);
+setInterval(()=>{if(!panel.open)return;let now=performance.now(),dt=Math.max(0,Math.min((now-last)/1000,1));last=now;update(dt)},250);
 })();
 </script>
 
