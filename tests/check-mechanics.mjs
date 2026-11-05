@@ -3,17 +3,23 @@ import { readFileSync } from 'node:fs';
 import { runInNewContext } from 'node:vm';
 const html=readFileSync(new URL('../freewheel-detailed.html',import.meta.url),'utf8');
 const scripts=[...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/g)].map(m=>m[1]);
-function load(i){const context={module:{exports:{}}};runInNewContext(scripts[i],context);return context.module.exports;}
+const context={module:{exports:{}}};
+runInNewContext(scripts[2],context);
+const clutchApi=context.module.exports,spec=context.FreewheelDriveSpec;
+context.module={exports:{}};
+runInNewContext(scripts[3],context);
+const mechanicsApi=context.module.exports;
 const close=(a,b,tol=1e-8)=>assert.ok(Math.abs(a-b)<tol,`${a} ≠ ${b}`);
-const clutch=load(2).create();
+const clutch=clutchApi.create();
 for(let i=0;i<=20;i++){
  const p=clutch.pose(i*clutch.config.releasedAngle/20);
  close(p.outerGap,0);close(p.noseContactError,0);
  assert.ok(p.springCompression>0&&p.springLength>0);
  assert.ok(p.rampGap>=-1e-9);
 }
-const config={ratio:3,driverRadius:.238,drivenRadius:.318,beltRadius:.249,rollbackLimit:clutch.config.releasedAngle};
-const mechanics=load(3).create(config);
+const m=spec.model;
+const config={ratio:m.gearRatio,driverRadius:m.driverPitchRadius,drivenRadius:m.drivenPitchRadius,beltRadius:m.beltCenterRadius,rollbackLimit:clutch.config.releasedAngle};
+const mechanics=mechanicsApi.create(config);
 const advance=(seconds)=>{for(let i=0;i<seconds*60;i++)mechanics.advance(1/60,true,1)};
 advance(2);
 let d=mechanics.snapshot();assert.equal(d.phase,'drive');assert.ok(d.outputAngle>0);
@@ -27,7 +33,8 @@ mechanics.setInstalled(true);advance(2);d=mechanics.snapshot();assert.equal(d.ph
 mechanics.setBackstop(false);advance(2);d=mechanics.snapshot();assert.equal(d.phase,'drive');assert.ok(d.omega>0);
 mechanics.reset();d=mechanics.snapshot();close(d.outputAngle,0);close(d.conveyorTravel,0);
 // Drum shell + lagging + belt half-thickness must meet the pulley path at both ends.
-close(.230+.012+.014/2,.249);close(.242+.014/2,.249);
-assert.match(html,/r\.rotation\.x=ad\*\.249\/r\.userData\.contactRadius/);
+close(m.headShellRadius+m.headLaggingThickness+m.beltThickness/2,m.beltCenterRadius);
+close(m.tailLaggedRadius+m.beltThickness/2,m.beltCenterRadius);
+assert.match(html,/r\.rotation\.x=ad\*MD\.beltCenterRadius\/r\.userData\.contactRadius/);
 assert.match(html,/rotor\.userData\.contactRadius=idRR/);
 console.log('Clutch geometry at 21 poses, forward/lock/runback/reinstall/reset, and belt contacts validated.');
