@@ -15,7 +15,7 @@ This is a source/kinematic audit of the **illustrative** HTML scene, not a dimen
 | 09 | Loading/dust station | Material feed follows drive/coast presentation state. | Chute clearances, dust extraction and skirt sealing not validated. |
 | 10 | Primary cleaner | Exists as a separate selectable component near head end. | Blade pressure, wear and wrap-clearance need manufacturer drawings. |
 | 11 | Belt scale | Weigh idler shares the carrying-idler contact radius; uncalibrated flow/total are suppressed in the *separate educational dialog*. | Calibration is synthetic and disconnected from real load cells / scene motion; no weighing accuracy claimed. |
-| 12 | Sway switches | Scene levers respond to the same input fields as the dialog; dialog supports alarm/trip/power-loss cases. | Switch electrical contacts and stop logic do not control the real scene; not a safety circuit. |
+| 12 | Sway switches | The four roller levers deflect with the same input used to bend the carrying/return belt; indicator lamps and a latched trip pause on-screen motion. Warning, trip, reset and power-loss transitions have automated tests. | Arc motion, roller contact, wiring, response time and safe stopping of actual machinery are not validated; this is not a safety circuit. |
 
 ## Views / states to inspect manually
 

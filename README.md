@@ -18,6 +18,7 @@ Then visit `http://localhost:8000/`. The self-contained viewer is `freewheel-det
 
 - Drag: orbit; Shift-drag: pan; wheel/pinch: zoom; click a part: inspect.
 - Space: play/pause; `I`: internal inspection; `L`: labels; `X`: explode; `H`: fit; `R`: reset; `1`–`3`: display styles.
+- Use the **Belt alignment · simulation** panel in the 3D viewport to demonstrate centered, warning and tripped conditions. The carrying belt shifts sideways, switch levers/lamps respond, and a latched trip pauses only the on-screen animation. The instrument dialog exposes separate carrying/return displacements, power loss and reset. This is **not** a real safety interlock.
 - Use **Export GLB** for a static mesh snapshot (not parametric CAD) and PNG for a view image.
 
 ## Verification
