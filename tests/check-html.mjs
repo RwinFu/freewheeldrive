@@ -10,8 +10,8 @@ for (const [index, script] of scripts.entries()) {
 }
 const parts = html.slice(html.indexOf('const parts=['), html.indexOf('const LIB='));
 const count = [...parts.matchAll(/^\{id:'[^']+',num:'/gm)].length;
-assert.equal(count, 12, 'assembly part count changed; review labels and translations');
-assert.match(html, /var navail = document\.querySelectorAll\('#rail button'\)\.length \|\| 12/);
+assert.equal(count, 13, 'assembly part count changed; review labels and translations');
+assert.match(html, /var navail = document\.querySelectorAll\('#rail button'\)\.length \|\| 13/);
 assert.match(html, /k\('allParts', 'Complete assembly<small>\{n\} components/);
 assert.match(html, /'مجموعهٔ کامل<small>\{n\} قطعه/);
 assert.match(html, /r\[0\]==='123'\?/);

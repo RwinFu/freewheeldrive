@@ -20,8 +20,35 @@ const assembly=runInNewContext(script.slice(begin,end)+'\ncreateAssembly(T,rende
  T:THREE,renderer:{capabilities:{getMaxAnisotropy:()=>8}},scene:new THREE.Scene(),
  document:canvasDoc,FreewheelClutchGeometry:clutchGeometry,FreewheelDriveSpec:context.FreewheelDriveSpec,FreewheelSway:swayContext.FreewheelSway,console
 });
-assert.equal(assembly.parts.length,12);
-assert.equal(new Set(assembly.parts.map(p=>p.id)).size,12);
+assert.equal(assembly.parts.length,13);
+assert.ok(assembly.parts.some(p=>p.id==='feeder'));
+assert.equal(assembly.feedRotor.length,2);
+assert.ok(assembly.feeder.getObjectByName('13_bearing_seal_and_grease_point_tail_left'));
+const feeding=new THREE.Box3().setFromObject(assembly.feeder);
+assert.ok(feeding.max.y>assembly.audit().tail[1]+.7,'feeder should be a separate upper deck');
+for(const end of ['tail','discharge']){
+ const wrap=assembly.feeder.getObjectByName(`13_${end}_belt_wrap`);
+ assert.ok(wrap,`missing ${end} belt wrap`);
+ const bounds=new THREE.Box3().setFromObject(wrap);
+ assert.ok(bounds.max.x-bounds.min.x>.08,'wrap must extend around drum in belt plane');
+ assert.ok(bounds.max.z-bounds.min.z>.50,'wrap must span belt width along shaft');
+ for(const side of ['left','right']){
+  const leg=assembly.feeder.getObjectByName(`13_floor_support_${end}_${side}`);
+  assert.ok(leg,`missing floor support ${end} ${side}`);
+  const floor=new THREE.Box3().setFromObject(leg);
+  assert.ok(floor.min.y>.02&&floor.min.y<.14,`support must reach floor: ${end} ${side}`);
+ }
+}
+const feedBefore=assembly.feedMarker[0].position.x;
+assembly.animateFeeder(.27,false);
+assert.ok(Math.abs(assembly.feedRotor[0].rotation.x)>.2);
+assert.notEqual(assembly.feedMarker[0].position.x,feedBefore);
+assembly.animateFeeder(.27,true);
+const held=assembly.feedRotor[0].rotation.x;
+assembly.animateFeeder(.55,true);
+assert.equal(assembly.feedRotor[0].rotation.x,held);
+
+assert.equal(new Set(assembly.parts.map(p=>p.id)).size,13);
 assert.equal(assembly.audit().gearMesh.toothRatio,context.FreewheelDriveSpec.model.gearRatio);
 assert.equal(assembly.audit().bearings.length,6);
 assert.ok(assembly.meshes.length>300);
@@ -74,6 +101,15 @@ for(const pose of [
  assert.ok(a.loads.every(load=>load.position.every(Number.isFinite)));
  for(const p of assembly.parts){assembly.nodes[p.id].updateWorldMatrix(true,true);assert.ok(assembly.nodes[p.id].matrixWorld.elements.every(Number.isFinite));}
 }
+// A stalled feeder must not continue pouring through the receiving chute.
+assembly.animate({inputAngle:1,outputAngle:1,drumAngle:1,conveyorTravel:.4,lock:0,
+ backstopInstalled:true,phase:'drive',time:1,feedHalted:true,feedStopTravel:.4});
+const stream=assembly.transport.parent.getObjectByName('07c_loading_stream');
+assert.ok(stream,'missing transfer stream');
+assert.ok(stream.children.every(child=>!child.visible),'feed stopped but transfer stream still active');
+assembly.animate({inputAngle:1,outputAngle:1,drumAngle:1,conveyorTravel:.4,lock:0,
+ backstopInstalled:true,phase:'drive',time:1,feedHalted:false});
+assert.ok(stream.children.some(child=>child.visible),'flow should resume with the feeder');
 // The same displacement bends the belt and the switch lever; the input is not just a dialog readout.
 const physics=swayContext.FreewheelSway;
 assert.equal(physics.evaluate(0,0).warning,false);

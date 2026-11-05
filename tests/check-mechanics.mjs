@@ -32,9 +32,14 @@ mechanics.setInstalled(false);advance(2);d=mechanics.snapshot();assert.equal(d.p
 mechanics.setInstalled(true);advance(2);d=mechanics.snapshot();assert.equal(d.phase,'locked');close(d.rollback,config.rollbackLimit);
 mechanics.setBackstop(false);advance(2);d=mechanics.snapshot();assert.equal(d.phase,'drive');assert.ok(d.omega>0);
 mechanics.reset();d=mechanics.snapshot();close(d.outputAngle,0);close(d.conveyorTravel,0);
+mechanics.setSlip(.20);advance(1);d=mechanics.snapshot();
+close(d.conveyorTravel,d.drumAngle*config.beltRadius*.8,1e-5);
+assert.throws(()=>mechanics.setSlip(1),/Invalid slip fraction/);
+mechanics.reset();advance(1);d=mechanics.snapshot();
+close(d.conveyorTravel,d.drumAngle*config.beltRadius,1e-5);
 // Drum shell + lagging + belt half-thickness must meet the pulley path at both ends.
 close(m.headShellRadius+m.headLaggingThickness+m.beltThickness/2,m.beltCenterRadius);
 close(m.tailLaggedRadius+m.beltThickness/2,m.beltCenterRadius);
-assert.match(html,/r\.rotation\.x=ad\*MD\.beltCenterRadius\/r\.userData\.contactRadius/);
+assert.match(html,/r\.rotation\.x=-motion\.conveyorTravel\/r\.userData\.contactRadius/);
 assert.match(html,/rotor\.userData\.contactRadius=idRR/);
 console.log('Clutch geometry at 21 poses, forward/lock/runback/reinstall/reset, and belt contacts validated.');

@@ -90,7 +90,7 @@
   border-radius:5px;background:#1f2f28;color:#d6e0cf;font-size:11px;line-height:1;flex-shrink:0}
 .g-fold:hover{background:#2a4034;color:#fff}
 #gravityPanel.folded .gravity-options{margin-top:8px}
-#gravityPanel.folded #demoStatus,#gravityPanel.folded .duty-grid,#gravityPanel.folded .duty-note,#gravityPanel.folded .gravity-footer{display:none}
+#gravityPanel.folded #demoStatus,#gravityPanel.folded #faultReadout,#gravityPanel.folded .duty-grid,#gravityPanel.folded .duty-note,#gravityPanel.folded .gravity-footer{display:none}
 @media(max-width:760px){.g-fold{display:grid}}
 /* Landscape phones and short desktop windows: the reference block used to push the sidebar out of view. */
 @media(max-height:720px){.duty-grid,.duty-note{display:none}.plant-ref{margin-top:6px;padding-top:6px}}
@@ -154,6 +154,7 @@ body.lang-fa .test-line b,body.lang-fa .speed-grid b,body.lang-fa .gravity-foote
 body.lang-fa #inspectionMetrics b,body.lang-fa #cNode,body.lang-fa .maker-links a,body.lang-fa .maker-links b,
 body.lang-fa .card-sub{unicode-bidi:isolate;direction:ltr}
 body.lang-fa .card-sub{text-align:right}
+#faultReadout{font-size:10px;line-height:1.45;color:#e4c68d;margin:8px 0 2px}#bFeedJam.on,#bBeltSlip.on{border-color:#dd8067;color:#ffd1bc;background:#563129}
 </style>
 <!-- Bundled Three.js and GLTFExporter license:
 The MIT License
@@ -204,8 +205,8 @@ THE SOFTWARE.
     <div class="header-actions"><span class="offline"><i></i><span id="offlineTxt">OFFLINE READY · PLANT USE</span></span><span class="rev" id="revTxt">REV. 07 · CEMENT</span><span class="brand-tag" id="brandTag">by RwinFu</span><button id="bLang" class="lang-btn" type="button" title="Switch language · EN / فارسی" aria-label="Switch language"><span id="langEn" class="on">EN</span><span class="lang-sep">/</span><span id="langFa">فا</span></button><button id="bPNG" class="icon-btn" title="Save a PNG of the 3D view" aria-label="Save PNG"><svg><use href="#i-camera"/></svg><span>PNG</span></button><button id="bGLB" class="export-btn" title="Export a static GLB snapshot for Blender"><svg><use href="#i-cube"/></svg><span>Export GLB</span></button><button id="bHelp" class="icon-btn square" title="Help & keyboard shortcuts" aria-label="Help and keyboard shortcuts"><svg><use href="#i-help"/></svg></button></div>
   </header>
   <aside id="sidebar" aria-label="Assembly components of the clinker belt drive">
-    <div class="side-heading"><span>ASSEMBLY TREE</span><b>10</b><button id="bCloseParts" class="icon-btn square mobile-only" aria-label="Close component list"><svg><use href="#i-close"/></svg></button></div>
-    <button id="bAll" class="all-parts on"><svg><use href="#i-cube"/></svg><span>Complete assembly<small>12 components · clinker duty</small></span><i>●</i></button>
+    <div class="side-heading"><span>ASSEMBLY TREE</span><b>13</b><button id="bCloseParts" class="icon-btn square mobile-only" aria-label="Close component list"><svg><use href="#i-close"/></svg></button></div>
+    <button id="bAll" class="all-parts on"><svg><use href="#i-cube"/></svg><span>Complete assembly<small>13 components · clinker duty</small></span><i>●</i></button>
     <nav id="rail" aria-label="Select a component"></nav>
     <div class="telemetry"><div class="section-caption">KINEMATIC MONITOR <span>LIVE</span></div><div class="state-line"><i id="statusDot"></i><strong id="driveStatus">Starting</strong><span id="statusTime">00:00</span></div><div class="speed-grid"><div><span>INPUT</span><b id="rpmIn">0.0</b><small>visual rpm</small></div><div><span>OUTPUT</span><b id="rpmOut">0.0</b><small>visual rpm</small></div></div><div class="ratio-line"><span>GEAR RATIO</span><strong id="modelGearRatio">3 : 1</strong></div><div class="ratio-line"><span>BELT RATIO</span><strong id="modelBeltRatio">0.748 : 1</strong></div><div class="ratio-line"><span>MODEL TOTAL</span><strong id="modelTotalRatio">≈ 4.01 : 1</strong></div><div class="test-line"><span>ROLLBACK</span><strong id="rollback">0.00°</strong></div>
     <div class="plant-ref"><div class="section-caption">PLANT REFERENCE <span>CLINKER DUTY</span></div>
@@ -257,6 +258,11 @@ THE SOFTWARE.
     <section id="gravityPanel" aria-label="آزمون برگشت بار کلینکر روی نوار شیب‌دار" dir="rtl" lang="fa">
       <div class="gravity-title"><span class="incline-badge">18°</span><strong>کلینکر روی نوار شیب‌دار · آزمون برگشت بار</strong><button id="bGravityFold" class="g-fold" type="button" aria-expanded="true" aria-controls="gravityPanel" aria-label="جمع کردن یا باز کردن جزئیات آزمون" title="جمع کردن / باز کردن">⌃</button></div>
       <div class="gravity-options" role="group" aria-label="حالت نصب یا حذف بک‌استاپ"><button id="bWithClutch" class="on" aria-pressed="true">با بک‌استاپ</button><button id="bWithoutClutch" aria-pressed="false">بدون بک‌استاپ</button><button id="bPowerCut">قطع برق</button></div>
+      <div class="gravity-options" role="group" aria-label="Educational fault studies">
+        <button id="bFeedJam" type="button" aria-pressed="false">Feeder / idler jam</button>
+        <button id="bBeltSlip" type="button" aria-pressed="false">Belt slip · 20%</button>
+      </div>
+      <p id="faultReadout" role="status" aria-live="polite">Normal feed · illustrative signals only; no calibrated sensors or real interlock.</p>
       <p id="demoStatus" role="status" aria-live="polite">موتور روشن است؛ بستر کلینکر روی شیب ۱۸° به سمت بالا حرکت می‌کند.</p>
       <div class="gravity-footer"><span id="demoState">حرکت رو به بالا ↗</span><span><i id="travelLbl">برگشت:</i> <b id="travelAmount">0.0 mm</b></span></div>
       <div class="duty-grid" aria-label="مشخصات مرجع بار">
@@ -2615,8 +2621,8 @@ THE SOFTWARE.
   for(const key of Object.keys(cfg))if(!Number.isFinite(cfg[key])||(key==='inclineAngle'?cfg[key]<0||cfg[key]>=Math.PI/2:cfg[key]<=0))throw new RangeError('Invalid mechanical parameter: '+key);
   const equivalentRadius=cfg.driverRadius/cfg.drivenRadius*cfg.beltRadius;
   const gravityAlpha=cfg.gravity*Math.sin(cfg.inclineAngle)*cfg.inertiaFactor/equivalentRadius;
-  let state,accumulator=0;
-  function reset(){accumulator=0;state={phase:'drive',backstopTest:false,backstopInstalled:true,omega:0,inputAngle:0,outputAngle:0,drumAngle:0,conveyorTravel:0,lock:0,rollback:0,reverseOrigin:null,testAge:0,time:0};}
+  let state,accumulator=0,slipFraction=0;
+  function reset(){accumulator=0;slipFraction=0;state={phase:'drive',backstopTest:false,backstopInstalled:true,omega:0,inputAngle:0,outputAngle:0,drumAngle:0,conveyorTravel:0,lock:0,rollback:0,reverseOrigin:null,testAge:0,time:0};}
   reset();
   function setBackstop(on){on=!!on;if(state.backstopTest===on)return;state.backstopTest=on;state.phase=on?'coasting':'drive';state.testAge=0;state.reverseOrigin=null;state.rollback=0;state.lock=0;}
   function setInstalled(on){
@@ -2654,10 +2660,10 @@ THE SOFTWARE.
      delta=constrain((before+state.omega)*dt/2,state.reverseOrigin===null?state.outputAngle:state.reverseOrigin);
     }
    }
-   state.outputAngle+=delta;state.inputAngle+=delta*cfg.ratio;state.drumAngle+=delta*cfg.driverRadius/cfg.drivenRadius;state.conveyorTravel+=delta*equivalentRadius;
+   state.outputAngle+=delta;state.inputAngle+=delta*cfg.ratio;state.drumAngle+=delta*cfg.driverRadius/cfg.drivenRadius;state.conveyorTravel+=delta*equivalentRadius*(1-slipFraction);
   }
   function advance(realDt,playing,speed){if(!playing||!Number.isFinite(realDt)||realDt<=0||!Number.isFinite(speed)||speed<=0)return;accumulator+=Math.min(realDt,.25)*Math.min(speed,2.2);while(accumulator+1e-12>=cfg.step){step(cfg.step);accumulator=Math.max(0,accumulator-cfg.step);}}
-  return Object.freeze({advance,reset,setBackstop,setInstalled,snapshot:()=>Object.assign({},state,{rollbackDistance:state.rollback*equivalentRadius,gravityAlpha}),config:Object.freeze(Object.assign({},cfg,{equivalentRadius,gravityAlpha}))});
+  return Object.freeze({advance,reset,setBackstop,setInstalled,setSlip(v){if(!Number.isFinite(v)||v<0||v>=1)throw new RangeError('Invalid slip fraction');slipFraction=v;},snapshot:()=>Object.assign({},state,{rollbackDistance:state.rollback*equivalentRadius,gravityAlpha}),config:Object.freeze(Object.assign({},cfg,{equivalentRadius,gravityAlpha}))});
  }
  /* Shared demonstrator geometry: lever travel is an arc, not an unbounded tangent.
     These thresholds are illustrative, not an electrical safety design. */
@@ -2690,6 +2696,7 @@ function create(T,opt){
   conveyor:{title:'نوار، خرپای گالری و غلتک‌ها',detail:'جزئیات غلتک تکیه‌گاهی',note:'نوار، بار و سینی محافظ کنار رفته‌اند تا غلتک‌ها، قاب و یاتاقان‌های انتهایی دیده شوند.',view:[-.4,.57],detailView:[.32,.4],roles:['supportRoller','tailRoller','frame','bearing']},
   pulley:{title:'توپی و شیارهای پولی',detail:'جزئیات شیارهای V',note:'پولی مکانیزم داخلی جداگانه ندارد؛ توپی و سه شیار واقعی مدل بررسی می‌شوند.',view:[.43,.25],detailView:[.68,.23],roles:['pulley','hub']},
   cleaner:{title:'تیغهٔ تمیزکنندهٔ اولیه و شوت ریزش',detail:'جزئیات تیغه و فنر کششی',note:'تیغهٔ تنگستنی با فنر روی مسیر برگشت نوار کشیده می‌شود و مواد برگشتی را پیش از رسیدن به پولی جدا می‌کند؛ مواد در شوت ریزش به جریان اصلی برمی‌گردند.',view:[.15,.22],detailView:[.30,.20],roles:['cleaner','cleanerChute']},
+  feeder:{title:'عرشهٔ انتقال بالایی',detail:'نوار کوتاه و مسیر انتقال',note:'نوار بالایی مستقل و فقط نمایشی است؛ مشخصات محرک و ظرفیت آن معلوم نیست.',view:[-.55,.30],detailView:[-.35,.20],roles:['frame','belt','tailRoller']},
   auxiliary:{title:'ایستگاه تغذیه و آب‌بندی غبار',detail:'جزئیات شوت و اسکرت‌بورد',note:'کلینکر از داکت انتقال وارد شوت مربعی می‌شود و عمودی روی بستر می‌ریزد؛ اسکرت‌بورد دو لبه را آب‌بند می‌کند و پردهٔ لاستیکی و نازل مکش، گردوغبار جابه‌جاشده را کنترل می‌کنند. دیوارهٔ نزدیک شوت فقط برای نمایش برش خورده است.',view:[-.55,.30],detailView:[-.30,.24],roles:['chute','skirt']},
   belt:{title:'مقطع و مسیر سه تسمه',detail:'جزئیات مقطع تسمه‌ها',note:'تسمه اجزای داخلی متحرک ندارد. سه رشته در سه صفحهٔ موازی روی یک مسیر مشترک حرکت می‌کنند؛ در این نما کل مسیر بسته و کمان‌های دورانی هر دو پولی دیده می‌شود. برای دیدن مقطع سه رشته، پولی درایو را انتخاب کنید.',view:[-.2,.25],detailView:[.72,.3],roles:['belt']},
   scale:{title:'توزین نوار — پل توزین تک‌غلتک',detail:'لودسل و سنسور سرعت',note:'رولیک توزین روی تیر متحرکی با دو لودسل نمایشی قرار دارد. چیدمان از MSI الهام گرفته است؛ جزئیات داخلی لودسل و نصب دقیق در این مدل تأیید نشده‌اند. چرخ اصطکاکی، سرعت نوار را روی مسیر برگشتِ تمیز اندازه می‌گیرد. دقت توزین به‌اندازهٔ هم‌ترازی غلتک‌ها، فاصلهٔ اسکرت‌بورد و کیفیت کالیبراسیون خوب است — نه بیشتر.',view:[-.35,.30],detailView:[-.10,.20],roles:['weighBridge','weighIdler','loadCell','speedSensor','junctionBox']},
@@ -3201,6 +3208,14 @@ const api=Object.freeze({create});if(typeof module!=='undefined'&&module.exports
         ['Dribble chute', 'شوت ریزش', 'Rejoins the main stream', 'بازگشت به جریان اصلی'],
         ['Watch', 'پایش', 'Blade wear, build-up under the drum', 'سایش تیغه، تجمع مواد زیر درام']]
     },
+    feeder: {
+      short: ['Upper feed deck', 'عرشهٔ تغذیهٔ بالایی'],
+      label: ['Upper feed deck & transfer', 'عرشهٔ تغذیه و انتقال بالایی'],
+      sub: ['Independent illustrative feed · unrated', 'تغذیهٔ مستقلِ نمایشی · بدون ظرفیت مشخص'],
+      specs: [['Deck', 'عرشه', 'Upper feeder → enclosed duct → receiving belt', 'تغذیهٔ بالا ← داکت پوشیده ← نوار دریافت‌کننده'],
+        ['Speed / drive', 'سرعت / درایو', 'Unspecified', 'تعیین‌نشده'],
+        ['Interlock', 'اینترلاک', 'Concept only · not certified', 'صرفاً مفهومی · تأییدنشده']]
+    },
     auxiliary: {
       short: ['Loading station', 'ایستگاه تغذیه'],
       label: ['Loading station & dust sealing', 'ایستگاه تغذیه و آب‌بندی غبار'],
@@ -3448,6 +3463,12 @@ const api=Object.freeze({create});if(typeof module!=='undefined'&&module.exports
       note: ['The tungsten blade is sprung onto the return run and lifts carry-back before it reaches the pulley; the removed material returns to the main stream through the dribble chute.',
         'تیغهٔ تنگستنی با فنر روی مسیر برگشت نوار کشیده می‌شود و مواد برگشتی را پیش از رسیدن به پولی جدا می‌کند؛ مواد در شوت ریزش به جریان اصلی برمی‌گردند.']
     },
+    feeder: {
+      title: ['Upper infeed transfer deck', 'عرشهٔ انتقال و تغذیهٔ بالایی'],
+      detail: ['Short belt and shafts', 'نوار کوتاه و محورهای آن'],
+      note: ['Upper infeed is illustrative; the drive and plant capacity are unspecified. The duct feeds the lower receiving belt. Guardrails and bearing seals need engineering verification.',
+        'نوار بالایی نمایشی است؛ درایو و ظرفیت مرجع آن تعیین نشده‌اند. داکت، نوار دریافت‌کنندهٔ پایین را تغذیه می‌کند. حفاظ و آب‌بندی یاتاقان نیازمند تأیید مهندسی‌اند.']
+    },
     auxiliary: {
       title: ['Loading station and dust sealing', 'ایستگاه تغذیه و آب‌بندی غبار'],
       detail: ['Chute and skirtboard detail', 'جزئیات شوت و اسکرت‌بورد'],
@@ -3493,7 +3514,7 @@ const api=Object.freeze({create});if(typeof module!=='undefined'&&module.exports
       }
     }
     /* component count: read it from the tree so it can never go stale */
-    var navail = document.querySelectorAll('#rail button').length || 12;
+    var navail = document.querySelectorAll('#rail button').length || 13;
     var ntext = lang === 'fa' ? String(navail).replace(/[0-9]/g, function (d) { return '۰۱۲۳۴۵۶۷۸۹'[d]; }) : String(navail);
     var small = document.querySelector('#bAll small');
     if (small) small.textContent = small.textContent.replace('{n}', ntext);
@@ -3720,7 +3741,11 @@ const parts=[
 {id:'sway',num:'12',label:'Belt misalignment switches (sway switches)',short:'Alignment switches',sub:'4 illustrative units · dimensions require verification',axis:'belt frame',explode:[-.12,.72,-.12],anchor:[1.50,1.345,-.45],
  desc:'Conceptual paired belt-edge alignment switches on carrying and return runs. The roller deflection and latched stop are now educational simulations: lever travel, electrical contacts and actual switch selection have not been verified. Mounting clearance and interference require further review.',
  fa:'نمای مفهومی کلیدهای انحراف دو طرف مسیر رفت و برگشت نوار. غلتک‌ها و براکت‌ها صرفاً نمایشی‌اند؛ حرکت اهرم و توقف قفل‌شونده فقط شبیه‌سازی آموزشی‌اند؛ کنتاکت‌ها و انتخاب تجهیز واقعی تأیید نشده‌اند. فاصلهٔ نصب و تداخل قطعات به بررسی بیشتر نیاز دارد.',
- specs:[['Units','4 · two pairs, both belt edges'],['Roller','Ø25 × 72 mm · 25 mm illustrative gap'],['Switching','Example only · select and configure actual switch'],['Enclosure','Illustrative housing · rating not verified'],['Wiring','On-screen interlock only · no real electrical interface'],['Why two pairs','Belt wanders at the head and at the take-up']]}
+ specs:[['Units','4 · two pairs, both belt edges'],['Roller','Ø25 × 72 mm · 25 mm illustrative gap'],['Switching','Example only · select and configure actual switch'],['Enclosure','Illustrative housing · rating not verified'],['Wiring','On-screen interlock only · no real electrical interface'],['Why two pairs','Belt wanders at the head and at the take-up']]},
+{id:'feeder',num:'13',label:'Upper feed deck & transfer',short:'Upper feed deck',sub:'Second concept belt · independent drive unspecified',axis:'+X feed / gravity transfer',explode:[-.70,.88,.46],anchor:slopePoint(-2.10,2.14,-.45).toArray(),
+ desc:'An independent short upper infeed loop discharges through the enclosed duct into the loading chute above the inclined receiving belt. The lower receiving belt carries material uphill; the upper infeed is not driven by the depicted motor. Its drive, capacity, speed and pulley sizing are unspecified. The shown motion only indicates feed direction.',
+ fa:'نوار کوتاهِ مستقل در تراز بالاتر، مواد را از داکت پوشیده به شوتِ نوار شیب‌دارِ دریافت‌کننده می‌رساند. نوار دریافت‌کننده بار را به سمت بالا حمل می‌کند. درایو، ظرفیت، سرعت و اندازهٔ پولیِ نوار بالایی تعیین نشده‌اند و حرکت آن فقط جهت جریان را نشان می‌دهد.',
+ specs:[['Deck arrangement','Upper short infeed → enclosed chute → inclined receiving belt'],['Upper drive / speed','Unspecified · illustrative motion only'],['Transfer interlock','Not designed or certified'],['Access','Concept platform · clearances not validated']]}
 ];
 const LIB={motor:{c:0x617550,m:.20,r:.56,map:'cast'},cast:{c:0x788574,m:.42,r:.52,map:'cast'},dark:{c:0x303c36,m:.28,r:.57,map:'cast'},steel:{c:0xb6c4ba,m:.90,r:.34,map:'brushed'},chrome:{c:0xcad2c9,m:.98,r:.17},rubber:{c:0x181e18,m:0,r:.86},gold:{c:0xd4b77a,m:.78,r:.35},red:{c:0xc36e49,m:.25,r:.5},wood:{c:0x92703f,m:0,r:.85,map:'wood'},wood2:{c:0x715435,m:0,r:.82,map:'wood'},hood:{c:0x7f9186,m:.9,r:.32,map:'brushed'},glass:{c:0xd8aa59,m:0,r:.18,glass:true},paint:{c:0x3a4a3d,m:.34,r:.62,map:'cast'},clinker:{c:0x565449,m:.06,r:.96,map:'clinker'},clinker2:{c:0x6b675a,m:.05,r:.94,map:'clinker'}};
 /* Polished internal steel: keep paint, rubber and timber matte for contrast. */
@@ -4477,6 +4502,68 @@ const drivePath=twoPulleyPath({x:.55,y:.72},{x:HEAD.x,y:HEAD.y},MD.driverPitchRa
 })();
 /* Shared bolted skid: environmental support, deliberately not a selectable drive part. */
 (function(){const n=sgrp(root,'00_bolted_support_skid');const M=k=>mat('base',k);M3(n,bx(4.8,.075,2.62),M('dark'),0,.1025,.12);[-1,1].forEach(s=>M3(n,bx(4.8,.065,.09),M('steel'),0,.067,s*1.145+.12));[-1,1].forEach(a=>[-1,1].forEach(b=>{M3(n,bx(.30,.03,.28),M('cast'),a*2.17,.03,b*1.04+.12);M3(n,new T.CylinderGeometry(.023,.023,.024,6),M('gold'),a*2.17,.132,b*1.04+.12);}));M3(n,bx(.98,.10,.58),M('dark'),-.95,.19,.30);})();
+/* Separate elevated feeder deck: gravity transfer into the existing enclosed loading chute.
+   This is a concept line, not a second rated drive. All geometry remains in the same local
+   inclined coordinate frame as the chute. The feeder's right end is upstream of the duct. */
+const feeder=node('feeder','13_upper_infeed_transfer_deck',.98*SS,MID_Y-.98*CS,0);
+feeder.rotation.z=SLOPE;
+const feedZ=-.45,feedY=2.14,feedStart=-2.62,feedEnd=-1.48,feedR=.105;
+const feedMat=mat('feeder','rubber'),feedSteel=mat('feeder','paint'),feedMetal=mat('feeder','steel');
+const feedRotor=[];
+for(const x of [feedStart,feedEnd]){
+ const carrier=sgrp(feeder,'13_feeder_drum_axis_'+(x===feedStart?'tail':'discharge'),x,feedY,feedZ);
+ carrier.rotation.y=AXIS_Z;
+ const rotor=sgrp(carrier,'13_feeder_drum_spin');
+ M3(rotor,cylX(feedR,.53,24),feedMetal);M3(rotor,cylX(.030,.65,16),feedMetal);
+ M3(rotor,bx(.055,.008,.018),feedMetal,.32,.030,0); // outboard shaft-key study, clear of belt wrap
+ feedRotor.push(rotor);
+ for(const side of [-1,1]){
+  M3(feeder,bx(.15,.19,.075),feedSteel,x,feedY-.19,feedZ+side*.35);
+  M3(feeder,bx(.035,.032,.21),feedMetal,x,feedY,feedZ+side*.36);
+  const service=sgrp(feeder,'13_bearing_seal_and_grease_point_'+(x===feedStart?'tail':'discharge')+'_'+(side<0?'left':'right'),x,feedY,feedZ+side*.40);
+  M3(service,new T.TorusGeometry(.049,.009,8,20),feedMat);
+  M3(service,bx(.015,.042,.015),feedMetal,0,.10,0);
+ }
+}
+for(const y of [feedY+feedR,feedY-feedR])M3(feeder,bx(feedEnd-feedStart,.014,.52),feedMat,(feedEnd+feedStart)/2,y,feedZ);
+/* Two correctly oriented semicircular belt wraps, around Z-axis drums. */
+for(const [x,angle] of [[feedStart,PI],[feedEnd,0]]){
+ const wrap=new T.CylinderGeometry(feedR+.007,feedR+.007,.52,32,1,true,angle,PI);
+ wrap.rotateX(PI/2);
+ const endWrap=sgrp(feeder,x===feedStart?'13_tail_belt_wrap':'13_discharge_belt_wrap');
+ M3(endWrap,wrap,feedMat,x,feedY,feedZ);
+}
+for(const side of [-1,1]){
+ const zz=feedZ+side*.38;
+ M3(feeder,bx(feedEnd-feedStart+.30,.05,.045),feedSteel,(feedStart+feedEnd)/2,feedY-.32,zz);
+ M3(feeder,bx(feedEnd-feedStart+.30,.05,.045),feedSteel,(feedStart+feedEnd)/2,feedY-.68,zz);
+ for(const x of [feedStart,feedEnd]){
+  M3(feeder,bx(.05,.40,.05),feedSteel,x,feedY-.50,zz);
+  /* Posts continue to the floor; do not leave the upper gallery floating. */
+  const floorLocal=.98+(.11-MID_Y-x*SS)/CS;
+  const postTop=feedY-.68,postLength=postTop-floorLocal;
+  const leg=sgrp(feeder,'13_floor_support_'+(x===feedStart?'tail':'discharge')+'_'+(side<0?'left':'right'));
+  M3(leg,bx(.07,postLength,.07),feedSteel,x,(postTop+floorLocal)/2,feedZ+side*.62);
+  M3(leg,bx(.20,.04,.20),feedMetal,x,floorLocal-.02,feedZ+side*.62);
+ }
+}
+/* Inspection platform outboard of the belt, with toe board and two guarded rails. */
+M3(feeder,bx(1.44,.045,.45),feedSteel,-2.06,feedY-.65,feedZ+.82);
+M3(feeder,bx(1.44,.13,.028),feedMetal,-2.06,feedY-.56,feedZ+1.04);
+for(const x of [-2.72,-2.06,-1.40])M3(feeder,bx(.035,.74,.035),feedMetal,x,feedY-.26,feedZ+1.04);
+for(const y of [feedY-.04,feedY+.10])M3(feeder,bx(1.40,.026,.026),feedMetal,-2.06,y,feedZ+1.04);
+const feedMarker=[];for(let i=0;i<4;i++)feedMarker.push(sgrp(feeder,'13_feed_direction_marker_'+i));
+let lastFeederTravel=0;
+function animateFeeder(travel,stalled){
+ if(!stalled)lastFeederTravel=travel;
+ const distance=lastFeederTravel;
+ for(const rotor of feedRotor)rotor.rotation.x=-distance/feedR;
+ feedMarker.forEach((marker,i)=>{
+  marker.position.set(feedStart+.12+((i*.29+distance)%(feedEnd-feedStart-.20)+(feedEnd-feedStart-.20))%(feedEnd-feedStart-.20),feedY+feedR+.022,feedZ);
+  if(!marker.children.length)M3(marker,bx(.065,.014,.15),feedMetal);
+ });
+}
+animateFeeder(0,false);
 /* Removable concept guards, shown in the assembled view. No mesh-opening, reach-distance,
    fastener or compliance claim is made; expose the train with G for study. */
 const guards=sgrp(root,'00_REMOVABLE_DRIVE_GUARDS_NOT_CERTIFIED');
@@ -4539,8 +4626,8 @@ function animate(motion){
  // 2*pi wrap of the source would jump them by a fraction of a turn every revolution. The input train
  // turns against the output train so the bevel pair rolls together at its pitch point (see audit).
  const am=-motion.inputAngle,ao=-motion.outputAngle,ad=-motion.drumAngle;
- spin.motor.rotation.x=am;spin.coupling.rotation.x=am;spin.gbIn.rotation.x=am;spin.gbOut.rotation.x=ao;spin.freewheel.rotation.x=ao;spin.pulley.rotation.x=ao;spin.drum.rotation.x=ad;spin.tail.rotation.x=ad;
- for(const r of idlerRotors)r.rotation.x=ad*MD.beltCenterRadius/r.userData.contactRadius;
+ spin.motor.rotation.x=am;spin.coupling.rotation.x=am;spin.gbIn.rotation.x=am;spin.gbOut.rotation.x=ao;spin.freewheel.rotation.x=ao;spin.pulley.rotation.x=ao;spin.drum.rotation.x=ad;spin.tail.rotation.x=-motion.conveyorTravel/MD.beltCenterRadius;
+ for(const [i,r] of idlerRotors.entries())if(!(i===0&&motion.feedJam))r.rotation.x=-motion.conveyorTravel/r.userData.contactRadius;
 
  for(const b of bearingUnits){const a=b.shaftKey==='pulley'?ao:ad;b.cage.rotation.x=a*b.cageRatio;for(const ball of b.balls)ball.rotation.x=a*b.ballLocalRatio;}
  beltTex.conveyor.offset.x=-((motion.conveyorTravel/convTile)%1);beltTex.drive.offset.x=-((motion.outputAngle*MD.driverPitchRadius/driveTile)%1);setLock(motion.backstopInstalled===false?0:motion.lock);
@@ -4549,9 +4636,9 @@ function animate(motion){
  crates.forEach(c=>{
   const x=((c.userData.s0+motion.conveyorTravel)%3.56+3.56)%3.56-1.78,edge=Math.min(x+1.78,1.78-x),t=clamp((edge-.08)/.30,0,1),
    /* the belt upstream of the loading point is empty: material only exists downstream of it */
-   fed=clamp((x+1.02)/.22,0,1),fade=t*t*(3-2*t)*fed*fed;c.visible=fade>.004;c.traverse(o=>{if(o.isMesh)o.material.opacity=(o.material.userData.lookOpacity===undefined?1:o.material.userData.lookOpacity)*fade;});c.position.set(x,1.238+.002,-.45+(lastShiftCarry*clamp((1.78-Math.abs(x))/.28,0,1)));});
+   fed=clamp((x+1.02-(motion.feedHalted?Math.max(0,motion.conveyorTravel-motion.feedStopTravel):0))/.22,0,1),fade=t*t*(3-2*t)*fed*fed;c.visible=fade>.004;c.traverse(o=>{if(o.isMesh)o.material.opacity=(o.material.userData.lookOpacity===undefined?1:o.material.userData.lookOpacity)*fade;});c.position.set(x,1.238+.002,-.45+(lastShiftCarry*clamp((1.78-Math.abs(x))/.28,0,1)));});
  /* gravity-driven pour: the stream falls whenever the drive is running, and stops when the belt does */
- const feeding=motion.phase==='drive'||motion.phase==='coasting';
+ const feeding=!motion.feedHalted&&(motion.phase==='drive'||motion.phase==='coasting');
  for(const f of loadingStation.parts){
   const t=(motion.time*.62+f.phase)%1;
   f.g.position.y=loadingStation.top-t*(loadingStation.top-loadingStation.bottom);
@@ -4578,7 +4665,7 @@ function audit(){
    centre:u.station.getWorldPosition(new T.Vector3()).toArray(),
    axis:new T.Vector3(1,0,0).transformDirection(u.station.matrixWorld).toArray(),
    housingNode:u.station.name,innerRingNode:u.rot.name,cageNode:u.cage.name})),centerRise:MD.drumCenterDistance*SS,head:[HEAD.x,HEAD.y,-.45],tail:slopePoint(-1.9,.98,-.45).toArray(),clutch:{...lastPose,pushY:CC.pushY,pushZ:CC.pushZ,anchorY:CC.anchorY,anchorZ:CC.anchorZ,rollerRadius:CC.rollerRadius,outerRaceRadius:CC.raceRadius,pockets:rollers.map(o=>({center:o.ro.position.toArray(),nose:o.nose.position.toArray(),springStart:o.sp.position.toArray(),springLength:o.sp.scale.z*.020,anchor:o.guide.position.toArray(),guideDirection:new T.Vector3(1,0,0).applyQuaternion(o.guide.quaternion).toArray(),cellAngle:o.g.rotation.x,guideStopGap:(o.shoulder.position.y-CC.anchorY)*CC.pushY+(o.shoulder.position.z-CC.anchorZ)*CC.pushZ-CC.plungerShoulderHalfLength-CC.guideFrontDistance}))},loads:crates.map(c=>({position:c.getWorldPosition(new T.Vector3()).toArray(),up:new T.Vector3(0,1,0).transformDirection(c.matrixWorld).toArray(),beltNormalClearance:c.position.y-c.userData.loadHeight/2-1.238})),normalRepairs:geometryAudit.normalRepairs};}
-return{root,nodes,spin,parts,instrumentation,guards,setSwayVisual,materials:allMats,meshes,tagMat,animate,setLock,drivePath,conveyorPath,geometryAudit,clutch,audit,transport,crates,constants:{inputHeight:.72,driverRadius:MD.driverPitchRadius,drivenRadius:MD.drivenPitchRadius,beltRadius:MD.beltCenterRadius,rollerRadius:CC.rollerRadius,raceInnerRadius:CC.raceRadius,inclineAngle:SLOPE,releasedAngle:CC.releasedAngle,wedgeAngle:CC.wedgeAngle},textures:TX,inspectionRollers:rollers,bearingUnits,gear:GEAR};
+return{root,nodes,spin,parts,instrumentation,guards,animateFeeder,feeder,feedRotor,feedMarker,setSwayVisual,materials:allMats,meshes,tagMat,animate,setLock,drivePath,conveyorPath,geometryAudit,clutch,audit,transport,crates,constants:{inputHeight:.72,driverRadius:MD.driverPitchRadius,drivenRadius:MD.drivenPitchRadius,beltRadius:MD.beltCenterRadius,rollerRadius:CC.rollerRadius,raceInnerRadius:CC.raceRadius,inclineAngle:SLOPE,releasedAngle:CC.releasedAngle,wedgeAngle:CC.wedgeAngle},textures:TX,inspectionRollers:rollers,bearingUnits,gear:GEAR};
 }
 
 const A=createAssembly(T,renderer,scene),PARTS=A.parts,PMAP=Object.fromEntries(PARTS.map(p=>[p.id,p]));
@@ -4597,7 +4684,7 @@ function renderDriveFigures(){
 }
 renderDriveFigures();
 const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
-const S={demoTrip:false,guards:true,render:'solid',inside:false,section:false,back:false,play:!reduced,speed:1,auto:false,sel:null,hover:null,isolate:false,labels:true,userZoom:false,userPan:false,quality:'balanced',noBackstop:false,inspectDetail:false,inspectColors:true};
+const S={feedStopTravel:0,feedJam:false,beltSlip:false,demoTrip:false,guards:true,render:'solid',inside:false,section:false,back:false,play:!reduced,speed:1,auto:false,sel:null,hover:null,isolate:false,labels:true,userZoom:false,userPan:false,quality:'balanced',noBackstop:false,inspectDetail:false,inspectColors:true};
 const mechanics=FreewheelMechanics.create({ratio:modelSpec.gearRatio,driverRadius:A.constants.driverRadius,drivenRadius:A.constants.drivenRadius,beltRadius:A.constants.beltRadius,rollbackLimit:A.constants.releasedAngle,inclineAngle:A.constants.inclineAngle});
 const gravityArrow=new T.ArrowHelper(new T.Vector3(-Math.cos(A.constants.inclineAngle),-Math.sin(A.constants.inclineAngle),0),new T.Vector3(),.44,0xdd8067,.075,.035);gravityArrow.name='gravity_component_helper';gravityArrow.visible=false;scene.add(gravityArrow);
 function updateGravityArrow(){gravityArrow.visible=S.back&&!S.sel&&!S.isolate&&expCur<.01;if(gravityArrow.visible){const load=A.crates.find(c=>c.visible&&c.children[0].material.opacity>.9)||A.crates[1];load.getWorldPosition(gravityArrow.position);gravityArrow.position.z+=.30;gravityArrow.position.y+=.025;}}
@@ -4668,7 +4755,21 @@ for(const p of PARTS){
  const lead=document.createElement('div');lead.className='leader';$('leaderLines').append(lead);p.leader=lead;
  const b=document.createElement('button');b.dataset.id=p.id;b.title=pField(p,'label',p.label);b.innerHTML='<i>'+p.num+'</i><span>'+pField(p,'short',p.short)+'</span>';b.addEventListener('click',()=>selectPart(S.sel===p.id?null:p.id));$('rail').append(b);p.rail=b;
 }
-function showCard(){$('mechanismReadout').hidden=S.sel!=='freewheel';const card=$('card');if(!S.sel){card.classList.remove('open');card.inert=true;return;}const p=PMAP[S.sel],isFarsi=isFa();$('cNum').textContent=p.num;$('cName').textContent=pField(p,'label',p.label);$('cSub').textContent=pField(p,'sub',p.sub);$('cDesc').textContent=p.desc;$('cDesc').hidden=isFarsi;$('cDescFa').textContent=p.fa||'';$('cDescFa').hidden=!(p.fa&&isFarsi);$('cSpecs').replaceChildren();const specRows=(I18.part(p.id,'specs')||[]).map(r=>isFarsi?[r[1],r[3]]:[r[0],r[2]]);(specRows.length?specRows:p.specs).forEach(([name,value])=>{const row=document.createElement('div');row.className='spec-row';const a=document.createElement('span'),b=document.createElement('b');a.textContent=name;b.textContent=value;row.append(a,b);$('cSpecs').append(row);});$('cNode').textContent=A.nodes[p.id].name+(isFa()?' · محور ':' · AXIS ')+p.axis;card.classList.add('open');card.inert=S.inside;}
+function showCard(){$('mechanismReadout').hidden=S.sel!=='freewheel';const card=$('card');if(!S.sel){card.classList.remove('open');card.inert=true;return;}const p=PMAP[S.sel],isFarsi=isFa();$('cNum').textContent=p.num;$('cName').textContent=pField(p,'label',p.label);$('cSub').textContent=pField(p,'sub',p.sub);$('cDesc').textContent=p.desc;$('cDesc').hidden=isFarsi;$('cDescFa').textContent=p.fa||'';$('cDescFa').hidden=!(p.fa&&isFarsi);$('cSpecs').replaceChildren();const specRows=(I18.part(p.id,'specs')||[]).map(r=>isFarsi?[r[1],r[3]]:[r[0],r[2]]);const compare={
+ motor:['not rated',plantSpec.motorPowerKw+' kW · '+plantSpec.motorRpm+' rpm'],
+ coupling:['illustrative flange','not specified'],
+ gearbox:[modelSpec.gearRatio.toFixed(0)+':1 bevel · depicted total '+modelSpec.totalRatio.toFixed(2)+':1',plantSpec.totalRatio.toFixed(2)+':1 required overall · additional stage not depicted'],
+ freewheel:['illustrative roller-ramp','holding rating not specified'],
+ pulley:['pitch Ø '+(modelSpec.driverPitchRadius*2000).toFixed(0)+' / '+(modelSpec.drivenPitchRadius*2000).toFixed(0)+' mm','not specified'],
+ drum:['Ø '+((modelSpec.headShellRadius+modelSpec.headLaggingThickness)*2000).toFixed(0)+' mm','Ø '+(plantSpec.drumDiameter*1000).toFixed(0)+' mm · '+plantSpec.drumRpm.toFixed(1)+' rpm'],
+ conveyor:[modelSpec.drumCenterDistance.toFixed(1)+' m · '+modelSpec.inclineDegrees+'°',plantSpec.conveyorLength+' m · '+plantSpec.inclineDegrees+'°'],
+ belt:['pitch radii '+(modelSpec.driverPitchRadius*1000).toFixed(0)+' / '+(modelSpec.drivenPitchRadius*1000).toFixed(0)+' mm','not specified'],
+ feeder:['short concept loop · schematic','drive, speed and duty not specified'],
+ auxiliary:['illustrative chute','not specified'],cleaner:['illustrative cleaner','not specified'],scale:['illustrative weighbridge','calibration not specified'],sway:['illustrative switches','switch selection not specified']};
+ const [modelValue,plantValue]=compare[p.id]||['not specified','not specified'];
+ const rows=[[isFarsi?'مدل نمایشی':'VISIBLE MODEL',isFarsi?modelValue.replaceAll('not specified','تعیین‌نشده').replaceAll('not rated','بدون ظرفیت نامی').replaceAll('illustrative','نمایشی'):modelValue],
+ [isFarsi?'مرجع کارخانه':'PLANT REFERENCE',isFarsi?plantValue.replaceAll('not specified','تعیین‌نشده').replaceAll('not depicted','ترسیم‌نشده'):plantValue]];
+ rows.concat(specRows.length?specRows:p.specs).forEach(([name,value])=>{const row=document.createElement('div');row.className='spec-row';const a=document.createElement('span'),b=document.createElement('b');a.textContent=name;b.textContent=value;row.append(a,b);$('cSpecs').append(row);});$('cNode').textContent=A.nodes[p.id].name+(isFa()?' · محور ':' · AXIS ')+p.axis;card.classList.add('open');card.inert=S.inside;}
 function selectPart(id){
  if(id&&!PMAP[id])return;if(id==='freewheel'&&S.noBackstop)setBackstopInstalled(true);
  if(S.inside){if(id)enterInside(id);else exitInside(true);setPartsOpen(false);return;}
@@ -4728,7 +4829,7 @@ function resetAll(){
  if(inspector.isActive())inspector.disable();
  window.dispatchEvent(new Event('fw:reset-sway'));
  const qualityChanged=S.quality!=='balanced';
- Object.assign(S,{demoTrip:false,guards:true,render:'solid',inside:false,section:false,back:false,play:!reduced,speed:1,auto:false,sel:null,hover:null,isolate:false,labels:true,userZoom:false,userPan:false,quality:'balanced',noBackstop:false,inspectDetail:false,inspectColors:true});if(qualityChanged)setQuality('balanced');clearPreset('iso');insideRestore=null;expTarget=expCur=0;mechanics.reset();applyExplode();A.animate(mechanics.snapshot());cam.taz=HOME.az;cam.tel=HOME.el;cam.az=HOME.az;cam.el=HOME.el;$('explode').value=0;$('exv').textContent='0%';$('speed').value=1;$('spv').textContent='1.00×';paintRange($('explode'));paintRange($('speed'));setRender('solid');showCard();refreshUI();setPartsOpen(false);clearTimeout(toastTimer);$('toast').className='';canvas.classList.remove('hov');lastPhase='drive';updateMonitor(mechanics.snapshot());
+ Object.assign(S,{feedStopTravel:0,feedJam:false,beltSlip:false,demoTrip:false,guards:true,render:'solid',inside:false,section:false,back:false,play:!reduced,speed:1,auto:false,sel:null,hover:null,isolate:false,labels:true,userZoom:false,userPan:false,quality:'balanced',noBackstop:false,inspectDetail:false,inspectColors:true});if(qualityChanged)setQuality('balanced');clearPreset('iso');insideRestore=null;expTarget=expCur=0;mechanics.reset();feederTravel=0;A.animateFeeder(0,false);syncFaultUI();applyExplode();A.animate(mechanics.snapshot());cam.taz=HOME.az;cam.tel=HOME.el;cam.az=HOME.az;cam.el=HOME.el;$('explode').value=0;$('exv').textContent='0%';$('speed').value=1;$('spv').textContent='1.00×';paintRange($('explode'));paintRange($('speed'));setRender('solid');showCard();refreshUI();setPartsOpen(false);clearTimeout(toastTimer);$('toast').className='';canvas.classList.remove('hov');lastPhase='drive';updateMonitor(mechanics.snapshot());
 }
 $('explode').addEventListener('input',e=>setExplode(e.target.value/100));
 $('speed').addEventListener('input',e=>{S.speed=clamp(Number(e.target.value),0,2.2);$('spv').textContent=S.speed.toFixed(2)+'×';paintRange(e.target);dirty=true;updateMonitor(mechanics.snapshot());});
@@ -4739,8 +4840,20 @@ function setGravityFold(fold){fold=!!fold;$('gravityPanel').classList.toggle('fo
 let gravityFoldTouched=false;
 gravityFold.addEventListener('click',()=>{gravityFoldTouched=true;setGravityFold(!$('gravityPanel').classList.contains('folded'));});
 setGravityFold(innerWidth<=760);
-function togglePowerCut(autoRun){S.back=!S.back;mechanics.setBackstop(S.back);if(autoRun){S.play=true;if(S.speed===0){S.speed=1;$('speed').value=1;$('spv').textContent='1.00×';paintRange($('speed'));}}refreshUI();if(S.back)toast(S.play&&S.speed>0?t(S.noBackstop?'tNoBackstop':'tWedging'):t('tArmed'));else toast(t('tReenergised'));}
+function togglePowerCut(autoRun){if(!S.back)S.feedStopTravel=mechanics.snapshot().conveyorTravel;S.back=!S.back;mechanics.setBackstop(S.back);if(autoRun){S.play=true;if(S.speed===0){S.speed=1;$('speed').value=1;$('spv').textContent='1.00×';paintRange($('speed'));}}syncFaultUI();refreshUI();if(S.back)toast(S.play&&S.speed>0?t(S.noBackstop?'tNoBackstop':'tWedging'):t('tArmed'));else toast(t('tReenergised'));}
 function setBackstopInstalled(installed){const hadCut=S.back;S.noBackstop=!installed;mechanics.setInstalled(installed);mechanics.setBackstop(hadCut);if(!installed&&S.sel==='freewheel'){S.inside=false;S.isolate=false;S.sel=null;insideRestore=null;cam.taz=HOME.az;cam.tel=HOME.el;showCard();}A.animate(mechanics.snapshot());refreshUI();applyLook();updateMonitor(mechanics.snapshot());toast(t(installed?'tInstalled':'tRemoved'),!installed);}
+function syncFaultUI(){
+ for(const [id,on] of [['bFeedJam',S.feedJam],['bBeltSlip',S.beltSlip]]){
+  $(id).classList.toggle('on',on);$(id).setAttribute('aria-pressed',String(on));
+ }
+ $('faultReadout').textContent=S.feedJam?(isFa()?'گیرکردن نمایشی غلتک و توقف تغذیهٔ بالایی؛ حسگر و اینترلاک واقعی مدل نشده‌اند.':'Simulated idler jam and upper-feed halt; no actual jam sensor or interlock.'):
+  S.beltSlip?(isFa()?'لغزش نمایشی ۲۰٪: حرکت نوار از درام کندتر است؛ سنسور لغزش واقعی مدل نشده است.':'Illustrative 20% head-drum slip: belt slower than drum; no calibrated slip sensor.'):
+  S.back?(isFa()?'قطع برق: نوار بالایی برای نمایش توالی متوقف شده؛ اینترلاک واقعی طراحی نشده است.':'Power cut: upper feed halted for sequencing demonstration; no certified interlock.'):
+  (isFa()?'تغذیهٔ عادی؛ سیگنال‌ها نمایشی‌اند و سنسور واقعی نیستند.':'Normal feed · illustrative signals only; no calibrated sensors or real interlock.');
+}
+$('bFeedJam').addEventListener('click',()=>{S.feedJam=!S.feedJam;if(S.feedJam)S.feedStopTravel=mechanics.snapshot().conveyorTravel;syncFaultUI();dirty=true;});
+$('bBeltSlip').addEventListener('click',()=>{S.beltSlip=!S.beltSlip;mechanics.setSlip(S.beltSlip?.20:0);syncFaultUI();dirty=true;});
+syncFaultUI();
 $('bBack').addEventListener('click',()=>togglePowerCut(false));$('bPowerCut').addEventListener('click',()=>togglePowerCut(true));$('bWithClutch').addEventListener('click',()=>setBackstopInstalled(true));$('bWithoutClutch').addEventListener('click',()=>setBackstopInstalled(false));
 $('segR').addEventListener('click',e=>{const b=e.target.closest('button');if(b)setRender(b.dataset.r);});
 $('bAuto').addEventListener('click',()=>{S.auto=!S.auto;if(S.auto)clearPreset();refreshUI();});$('bReset').addEventListener('click',resetAll);$('bFit').addEventListener('click',fitView);$('bFocus').addEventListener('click',fitView);
@@ -4832,7 +4945,7 @@ async function makeGLB(){
 function download(blob,name){const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),30000);}
 $('bGLB').addEventListener('click',async()=>{const b=$('bGLB');b.disabled=true;toast(t('tGlbPrep'));try{download(await makeGLB(),'freewheel-drive.glb');toast(t('tGlbReady'));}catch(e){toast(t('tGlbFail')+e.message,true);}finally{b.disabled=false;}});
 $('bPNG').addEventListener('click',()=>{const pngBtn=$('bPNG');if(pngBtn.disabled)return;pngBtn.disabled=true;try{const gl=renderer.getContext(),w=renderer.domElement.width,h=renderer.domElement.height;const color=renderer.getClearColor(new T.Color()),alpha=renderer.getClearAlpha();renderer.setClearColor(S.inside?0x20364a:0x26372e,1);renderer.render(scene,camera);const pixels=new Uint8Array(w*h*4);gl.readPixels(0,0,w,h,gl.RGBA,gl.UNSIGNED_BYTE,pixels);renderer.setClearColor(color,alpha);dirty=true;const out=document.createElement('canvas');out.width=w;out.height=h;const g2=out.getContext('2d');const img=g2.createImageData(w,h);img.data.set(pixels);const tmp=document.createElement('canvas');tmp.width=w;tmp.height=h;tmp.getContext('2d').putImageData(img,0,0);g2.translate(0,h);g2.scale(1,-1);g2.drawImage(tmp,0,0);g2.setTransform(1,0,0,1,0,0);out.toBlob(blob=>{pngBtn.disabled=false;if(blob){download(blob,'freewheel-view.png');toast(t('tPngOk'));}else toast(t('tPngFail'),true);},'image/png');}catch(e){pngBtn.disabled=false;toast(t('tPngErr')+e.message,true);}});
-function snapshot(){const m=mechanics.snapshot();A.root.updateMatrixWorld(true);const axis=o=>new T.Vector3(1,0,0).transformDirection(o.matrixWorld).toArray();const dp=A.drivePath.pts,first=dp[0],next=dp[1],seam=dp[dp.length-1];return{duty:'clinker',inspection:inspector.audit(),inspectionProjection:S.inside?inspector.project(camera,viewW,viewH):null,inspectionViewport:S.inside?inspectionRect():null,engineering:A.audit(),alignment:{motorAxis:axis(A.spin.motor),gearboxOutputAxis:axis(A.spin.gbOut),driverAxis:axis(A.spin.pulley),headAxis:axis(A.spin.drum),tailAxis:axis(A.spin.tail),upperTangentNormalDot:(next.x-first.x)*first.nx+(next.y-first.y)*first.ny,beltSeamError:Math.hypot(first.x-seam.x,first.y-seam.y)},version:'4.2.0-cement',driveSpec:{model:modelSpec,plant:plantSpec},finishes:A.materials.map(m=>({name:m.name,part:m.userData.part,housing:!!m.userData.housing,interior:!!m.userData.interiorFinish,key:m.userData.finishKey||'',roughness:m.roughness,metalness:m.metalness,envMapIntensity:m.envMapIntensity,opacity:m.opacity,baseRoughness:m.userData.base.roughness})),ready:document.body.dataset.ready,state:{...S},explode:{target:expTarget,current:expCur},motion:m,constants:{...A.constants,gearRatio:modelSpec.gearRatio,rollbackLimit:mechanics.config.rollbackLimit},camera:{az:cam.az,el:cam.el,r:cam.r,x:cam.x,y:cam.y,z:cam.z,targetR:cam.tr,targetAz:cam.taz,targetEl:cam.tel},viewport:{width:viewW,height:viewH},parts:PARTS.map(p=>({id:p.id,node:A.nodes[p.id].name,position:A.nodes[p.id].position.toArray(),visible:A.nodes[p.id].visible})),geometry:{meshes:A.meshes.length,geometries:renderer.info.memory.geometries,textures:renderer.info.memory.textures,drawCalls:renderer.info.render.calls,triangles:renderer.info.render.triangles,driveLoopLength:A.drivePath.length,conveyorLoopLength:A.conveyorPath.length},labels:PARTS.filter(p=>!p.labelEl.hidden&&S.labels).map(p=>p.id)};}
+function snapshot(){const m=mechanics.snapshot();A.root.updateMatrixWorld(true);const axis=o=>new T.Vector3(1,0,0).transformDirection(o.matrixWorld).toArray();const dp=A.drivePath.pts,first=dp[0],next=dp[1],seam=dp[dp.length-1];return{duty:'clinker',inspection:inspector.audit(),inspectionProjection:S.inside?inspector.project(camera,viewW,viewH):null,inspectionViewport:S.inside?inspectionRect():null,engineering:A.audit(),alignment:{motorAxis:axis(A.spin.motor),gearboxOutputAxis:axis(A.spin.gbOut),driverAxis:axis(A.spin.pulley),headAxis:axis(A.spin.drum),tailAxis:axis(A.spin.tail),upperTangentNormalDot:(next.x-first.x)*first.nx+(next.y-first.y)*first.ny,beltSeamError:Math.hypot(first.x-seam.x,first.y-seam.y)},version:'4.2.0-cement',driveSpec:{model:modelSpec,plant:plantSpec},finishes:A.materials.map(m=>({name:m.name,part:m.userData.part,housing:!!m.userData.housing,interior:!!m.userData.interiorFinish,key:m.userData.finishKey||'',roughness:m.roughness,metalness:m.metalness,envMapIntensity:m.envMapIntensity,opacity:m.opacity,baseRoughness:m.userData.base.roughness})),ready:document.body.dataset.ready,state:{...S},feeder:{travel:feederTravel,stalled:S.feedJam},explode:{target:expTarget,current:expCur},motion:m,constants:{...A.constants,gearRatio:modelSpec.gearRatio,rollbackLimit:mechanics.config.rollbackLimit},camera:{az:cam.az,el:cam.el,r:cam.r,x:cam.x,y:cam.y,z:cam.z,targetR:cam.tr,targetAz:cam.taz,targetEl:cam.tel},viewport:{width:viewW,height:viewH},parts:PARTS.map(p=>({id:p.id,node:A.nodes[p.id].name,position:A.nodes[p.id].position.toArray(),visible:A.nodes[p.id].visible})),geometry:{meshes:A.meshes.length,geometries:renderer.info.memory.geometries,textures:renderer.info.memory.textures,drawCalls:renderer.info.render.calls,triangles:renderer.info.render.triangles,driveLoopLength:A.drivePath.length,conveyorLoopLength:A.conveyorPath.length},labels:PARTS.filter(p=>!p.labelEl.hidden&&S.labels).map(p=>p.id)};}
 /* Kinematic audit: measured world orientation of every rotating node, so rotation direction,
    gear and belt ratios and rolling contacts can be verified from the rendered scene itself. */
 function kinematics(){
@@ -4858,11 +4971,13 @@ function kinematics(){
    raceRadius:A.constants.raceInnerRadius,rollerRadius:A.constants.rollerRadius,gearRatio:modelSpec.gearRatio}};
 }
 window.FreewheelStudio=Object.freeze({version:'4.2.0-cement',inspect:snapshot,kinematics,exportGLB:makeGLB,reset:resetAll,root:()=>A.root,scene:()=>scene,camera:()=>camera,state:()=>S,select:id=>selectPart(id),view:(a,e,r,x,y,z)=>{if(Number.isFinite(a)){cam.taz=a;}if(Number.isFinite(e)){cam.tel=e;}if(Number.isFinite(r)){cam.tr=r;}if(Number.isFinite(x)){cam.tx=x;cam.x=x;}if(Number.isFinite(y)){cam.ty=y;cam.y=y;}if(Number.isFinite(z)){cam.tz=z;cam.z=z;}S.userZoom=true;S.userPan=true;dirty=true;}});
-let last=performance.now(),monitorTime=0,shadowTime=0,lastPhase='drive',first=true;
+let feederTravel=0,last=performance.now(),monitorTime=0,shadowTime=0,lastPhase='drive',first=true;
 function frame(now){
  raf=requestAnimationFrame(frame);if(contextLost||document.hidden){last=now;return;}const dt=clamp((now-last)/1000,0,.20);last=now;
+ if(!S.feedJam&&!S.back&&!S.demoTrip&&S.play&&S.speed>0)feederTravel+=dt*S.speed*.36;
+ A.animateFeeder(feederTravel,S.feedJam||S.back);
  const difference=expTarget-expCur;if(Math.abs(difference)>.00005){expCur+=difference*(1-Math.exp(-dt*6));if(Math.abs(expTarget-expCur)<.00005)expCur=expTarget;applyExplode();dirty=true;}
- mechanics.advance(dt,S.play&&!S.demoTrip,S.speed);const motion=mechanics.snapshot();const moving=S.play&&!S.demoTrip&&S.speed>0&&motion.phase!=='locked';if(moving||dirty||lastPhase!==motion.phase)A.animate(motion);
+ mechanics.advance(dt,S.play&&!S.demoTrip,S.speed);const motion=mechanics.snapshot();const moving=S.play&&!S.demoTrip&&S.speed>0&&motion.phase!=='locked';if(moving||dirty||lastPhase!==motion.phase)A.animate({...motion,feedJam:S.feedJam,feedHalted:S.feedJam||S.back,feedStopTravel:S.feedStopTravel});
  if(lastPhase!==motion.phase){if(motion.phase==='locked')toast(t('tLocked'));lastPhase=motion.phase;dirty=true;}
  if(hoverPoint&&!pointers.size&&now-lastHover>75){lastHover=now;const id=pick(hoverPoint.x,hoverPoint.y);if(S.hover!==id){S.hover=id;canvas.classList.toggle('hov',!!id);dirty=true;}hoverPoint=null;}
  if(S.auto&&!pointers.size){cam.taz+=dt*.12;dirty=true;}
@@ -4882,7 +4997,7 @@ function localizeChrome(){
   p.labelEl.setAttribute('aria-label',(I18.isFa()?'بررسی ':'Inspect ')+pField(p,'label',p.label));
  }
 }
-I18.onChange(()=>{localizeChrome();syncSwayUI();refreshUI();showCard();updateMonitor(mechanics.snapshot());if(S.inside)refreshInspectionUI();applyLook();dirty=true;});
+I18.onChange(()=>{localizeChrome();syncSwayUI();syncFaultUI();refreshUI();showCard();updateMonitor(mechanics.snapshot());if(S.inside)refreshInspectionUI();applyLook();dirty=true;});
 localizeChrome();
 paintRange($('explode'));paintRange($('speed'));setQuality('balanced');showCard();refreshUI();applyLook();resize();updateCameraTargets();cam.r=cam.tr;cam.x=cam.tx;cam.y=cam.ty;cam.z=cam.tz;raf=requestAnimationFrame(frame);
 }
