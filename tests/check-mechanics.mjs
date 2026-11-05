@@ -1,0 +1,33 @@
+import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import { runInNewContext } from 'node:vm';
+const html=readFileSync(new URL('../freewheel-detailed.html',import.meta.url),'utf8');
+const scripts=[...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/g)].map(m=>m[1]);
+function load(i){const context={module:{exports:{}}};runInNewContext(scripts[i],context);return context.module.exports;}
+const close=(a,b,tol=1e-8)=>assert.ok(Math.abs(a-b)<tol,`${a} ≠ ${b}`);
+const clutch=load(2).create();
+for(let i=0;i<=20;i++){
+ const p=clutch.pose(i*clutch.config.releasedAngle/20);
+ close(p.outerGap,0);close(p.noseContactError,0);
+ assert.ok(p.springCompression>0&&p.springLength>0);
+ assert.ok(p.rampGap>=-1e-9);
+}
+const config={ratio:3,driverRadius:.238,drivenRadius:.318,beltRadius:.249,rollbackLimit:clutch.config.releasedAngle};
+const mechanics=load(3).create(config);
+const advance=(seconds)=>{for(let i=0;i<seconds*60;i++)mechanics.advance(1/60,true,1)};
+advance(2);
+let d=mechanics.snapshot();assert.equal(d.phase,'drive');assert.ok(d.outputAngle>0);
+close(d.drumAngle,d.outputAngle*config.driverRadius/config.drivenRadius);
+close(d.conveyorTravel,d.drumAngle*config.beltRadius);
+mechanics.setBackstop(true);advance(4);d=mechanics.snapshot();assert.equal(d.phase,'locked');
+close(d.rollback,config.rollbackLimit);close(d.omega,0);
+close(d.rollbackDistance,d.rollback*config.driverRadius/config.drivenRadius*config.beltRadius);
+mechanics.setInstalled(false);advance(2);d=mechanics.snapshot();assert.equal(d.phase,'runback');assert.ok(d.rollback>config.rollbackLimit);
+mechanics.setInstalled(true);advance(2);d=mechanics.snapshot();assert.equal(d.phase,'locked');close(d.rollback,config.rollbackLimit);
+mechanics.setBackstop(false);advance(2);d=mechanics.snapshot();assert.equal(d.phase,'drive');assert.ok(d.omega>0);
+mechanics.reset();d=mechanics.snapshot();close(d.outputAngle,0);close(d.conveyorTravel,0);
+// Drum shell + lagging + belt half-thickness must meet the pulley path at both ends.
+close(.230+.012+.014/2,.249);close(.242+.014/2,.249);
+assert.match(html,/r\.rotation\.x=ad\*\.249\/r\.userData\.contactRadius/);
+assert.match(html,/rotor\.userData\.contactRadius=idRR/);
+console.log('Clutch geometry at 21 poses, forward/lock/runback/reinstall/reset, and belt contacts validated.');
