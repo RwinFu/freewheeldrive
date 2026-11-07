@@ -1,7 +1,9 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { runInNewContext } from 'node:vm';
-import * as THREE from 'three';
+// Probe the same scene against the shipping r128 and an isolated modern Three.js.
+// This is NOT a browser-runtime migration or visual approval.
+const THREE=await import(process.env.FW_THREE_MODERN==='1'?'three-modern':'three');
 import { createCanvas } from '@napi-rs/canvas';
 
 const html=readFileSync(new URL('../freewheel-detailed.html',import.meta.url),'utf8');
@@ -21,6 +23,7 @@ const assembly=runInNewContext(script.slice(begin,end)+'\ncreateAssembly(T,rende
  document:canvasDoc,FreewheelClutchGeometry:clutchGeometry,FreewheelDriveSpec:context.FreewheelDriveSpec,FreewheelSway:swayContext.FreewheelSway,console
 });
 assert.equal(assembly.parts.length,12);
+if(THREE.SRGBColorSpace)assert.equal(assembly.textures.wood.colorSpace,THREE.SRGBColorSpace,'color texture must carry sRGB metadata on modern Three');
 assert.equal(new Set(assembly.parts.map(p=>p.id)).size,12);
 assert.equal(assembly.audit().gearMesh.toothRatio,context.FreewheelDriveSpec.model.gearRatio);
 assert.equal(assembly.audit().bearings.length,6);
@@ -127,4 +130,4 @@ assert.ok(positions.array[lower*30+2]-original[lower*30+2]<-.04);
 assert.ok(assembly.instrumentation.levers.some(l=>Math.abs(l.group.rotation.x)>.2));
 assembly.setSwayVisual(0,0,{warning:false});
 for(const i of [upper*30+2,lower*30+2])assert.ok(Math.abs(positions.array[i]-original[i])<1e-6);
-console.log(`Built ${assembly.parts.length} components / ${assembly.meshes.length} meshes; checked drive, lock, runback and belt misalignment.`);
+console.log(`Three r${THREE.REVISION}: built ${assembly.parts.length} components / ${assembly.meshes.length} meshes; checked drive, lock, runback and belt misalignment.`);
