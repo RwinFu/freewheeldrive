@@ -45,3 +45,33 @@ checked for frames, duration, audio loudness and true peak. Source and
 reproduction steps are in [film README](../films/clinker-drive/README.md).
 The film's r160 dependencies do **not** change the viewer's r128 engine. None
 of this establishes as-built accuracy, safety compliance or a CAD validation.
+
+## Optional Ultra viewer tier (subsequent pass)
+
+The original Dropbox archive was rechecked against its SHA-256 and its
+`SKILL.md`, `references/modeling.md` and `references/light.md` reviewed.
+The Ultra setting translates its bevel/material/light guidance to the
+existing **offline r128 viewer**, rather than claiming the separate film
+engine is a real-time plugin. Its procedural texture/edge detail stays
+conceptual and its render budget is bounded. In Chromium/SwiftShader the
+Balanced → Ultra → Low → Ultra transitions, HERO preset, and no-console-error
+render were exercised. The static and dual-Three tests exercise geometry
+visibility, material restoration and repeat-entry without duplicate detail.
+No as-built evidence was added.
+
+## GitHub skills follow-up for Ultra (2026-11-07)
+
+Searched GitHub for WebGL/Three.js agent guidance. Selected two MIT projects
+because they cover this offline product viewer rather than Blender-only or
+WebGPU-only runtimes: [Web 3D Modeling Workflow](https://github.com/wodelt-tishellor/web-3d-modeling-workflow/tree/49dea3ea2914683be8c60772d5933d9298dd793a)
+(commit `49dea3e`) and [Three.js Skills](https://github.com/cesartevisual/threejs-skills/tree/84f9bcb4bea1f7a28d57fe7f0af78f7f9c3dc467)
+(commit `84f9bcb`). Relevant sources/licenses are installed under
+`.agent-skills/`; local agent symlinks are described there. Their material,
+lighting, viewer and performance guidance drove a targeted improvement:
+Ultra now uses a cached, separately prefiltered studio reflection environment
+and directionally brushed/cast data maps, while restoring its original
+material/environment on exit. This is **not** an r128-to-WebGPU migration and
+not proof of real equipment identity or photo accuracy. Browser/SwiftShader
+QA exercised desktop and mobile Ultra→Balanced, as well as quality switching
+from inside inspection; scene and dual-Three tests cover the texture and mesh
+lifecycle. No physical GPU benchmark was available.

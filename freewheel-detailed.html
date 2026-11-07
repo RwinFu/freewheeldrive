@@ -47,6 +47,9 @@
 /* In a small viewport the inspection toolbar replaces the redundant global dock. */
 @media(max-width:760px){#stage.internal-view{bottom:8px}#stage.internal-view~#dock{display:none}.inspection-actions button{font-size:10px}}
 @media(max-width:760px) and (max-height:560px){.inspection-actions button{font-size:8px}}
+/* The optional studio tier remains readable in both languages on a narrow stage. */
+#quality{max-width:137px}
+@media(max-width:760px){#quality{max-width:94px}}
 /* ---- Cement duty additions ---- */
 .duty-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-top:9px}
 .duty-grid>div{border:1px solid #8a9f7d30;border-radius:5px;padding:4px 6px;background:#1b2a2255}
@@ -224,7 +227,7 @@ THE SOFTWARE.
   <main id="stage" aria-label="Interactive three-dimensional assembly">
     <canvas id="gl" tabindex="0" aria-label="3D drive station. Drag to orbit, Shift-drag to pan, scroll to zoom. Press question mark for help."></canvas>
     <div class="stage-shade" aria-hidden="true"></div>
-    <div class="viewport-head"><button id="bParts" class="mini-btn mobile-only" aria-expanded="false" aria-controls="sidebar"><svg><use href="#i-parts"/></svg>Parts <span>12</span></button><div class="view-label"><i></i><span id="viewName">COMPLETE ASSEMBLY</span><b id="viewMode">PERSPECTIVE</b></div><div class="viewport-tools"><button id="bLabels" class="mini-icon on" aria-label="Toggle component labels" aria-pressed="true" title="Component labels · L"><svg><use href="#i-label"/></svg></button><button id="bGuard" class="mini-icon on" type="button" aria-label="Show drive guards" aria-pressed="true" title="Toggle drive guards · G">G</button><button id="bFit" class="mini-icon" title="Fit current view · H" aria-label="Fit current view"><svg><use href="#i-home"/></svg></button><select id="quality" aria-label="Rendering quality" title="Rendering quality"><option value="balanced">Balanced</option><option value="high">High quality</option><option value="low">Low / fast</option></select></div></div>
+    <div class="viewport-head"><button id="bParts" class="mini-btn mobile-only" aria-expanded="false" aria-controls="sidebar"><svg><use href="#i-parts"/></svg>Parts <span>12</span></button><div class="view-label"><i></i><span id="viewName">COMPLETE ASSEMBLY</span><b id="viewMode">PERSPECTIVE</b></div><div class="viewport-tools"><button id="bLabels" class="mini-icon on" aria-label="Toggle component labels" aria-pressed="true" title="Component labels · L"><svg><use href="#i-label"/></svg></button><button id="bGuard" class="mini-icon on" type="button" aria-label="Show drive guards" aria-pressed="true" title="Toggle drive guards · G">G</button><button id="bFit" class="mini-icon" title="Fit current view · H" aria-label="Fit current view"><svg><use href="#i-home"/></svg></button><select id="quality" aria-label="Rendering quality" title="Rendering quality"><option value="balanced">Balanced</option><option value="high">High quality</option><option value="ultra">Ultra · studio</option><option value="low">Low / fast</option></select></div></div>
     <section id="swayPanel" aria-label="Simulated belt misalignment" dir="ltr">
       <div class="sway-head"><i id="swayLamp" aria-hidden="true"></i><strong id="swayTitle">BELT ALIGNMENT · SIMULATION</strong></div>
       <p id="swayReadout" role="status" aria-live="polite">Belt centered · 0 mm</p>
@@ -2900,6 +2903,7 @@ const api=Object.freeze({create});if(typeof module!=='undefined'&&module.exports
   k('qualityAria', 'Rendering quality', 'کیفیت رندر');
   k('qBalanced', 'Balanced', 'متعادل');
   k('qHigh', 'High quality', 'کیفیت بالا');
+  k('qUltra', 'Ultra · studio', 'اولترا · استودیویی');
   k('qLow', 'Low / fast', 'کم / سریع');
   k('labelsAriaBox', 'Component annotations', 'برچسب‌های قطعات');
   k('cardAria', 'Selected component', 'قطعهٔ انتخاب‌شده');
@@ -3529,7 +3533,7 @@ const api=Object.freeze({create});if(typeof module!=='undefined'&&module.exports
     /* quality <select> options */
     var q = document.getElementById('quality');
     if (q) {
-      var opts = { balanced: 'qBalanced', high: 'qHigh', low: 'qLow' };
+      var opts = { balanced: 'qBalanced', high: 'qHigh', ultra: 'qUltra', low: 'qLow' };
       for (var oi = 0; oi < q.options.length; oi++) {
         var kk = opts[q.options[oi].value];
         if (kk) q.options[oi].textContent = get(kk);
@@ -4648,7 +4652,100 @@ function audit(){
 return{root,nodes,spin,parts,instrumentation,guards,setSwayVisual,materials:allMats,meshes,tagMat,animate,setLock,drivePath,conveyorPath,geometryAudit,clutch,audit,transport,crates,constants:{inputHeight:.72,driverRadius:MD.driverPitchRadius,drivenRadius:MD.drivenPitchRadius,beltRadius:MD.beltCenterRadius,rollerRadius:CC.rollerRadius,raceInnerRadius:CC.raceRadius,inclineAngle:SLOPE,releasedAngle:CC.releasedAngle,wedgeAngle:CC.wedgeAngle},textures:TX,inspectionRollers:rollers,bearingUnits,gear:GEAR};
 }
 
+// Code Cinema's modeling/light principles adapted to a live offline r128 viewer:
+// shaped key, restrained cool fill, real edge geometry and deterministic microfinish.
+// The film kit's r160 runtime, temporal sampler and grading are NOT imported here.
+function createUltraFinish(T,A,renderer,scene,key,fill){
+ let detail=null,maps=null,studio=null;const baseEnvironment=scene.environment,original=new Map();
+ const bounce=new T.PointLight(0xffca91,.30,3,2);
+ bounce.position.set(-.6,.26,1.05);bounce.visible=false;scene.add(bounce);
+ function texture(kind){
+  const c=document.createElement('canvas');c.width=c.height=512;
+  const g=c.getContext('2d'),im=g.createImageData(512,512),a=im.data;
+  // Tileable seeded height field. Directional machining and granular casting
+  // alter microfacet response, not measured wear or invented equipment.
+  const hash=(x,y)=>{let n=Math.imul((x&511)+1,374761393)^Math.imul((y&511)+1,668265263);
+   n=Math.imul(n^(n>>>13),1274126177);return ((n^(n>>>16))>>>0)/4294967295;};
+  const h=(x,y)=>kind==='brushed'||kind==='normalBrushed'?.72*hash(0,y)+.28*hash(x,y):hash(x,y);
+  for(let y=0;y<512;y++)for(let x=0;x<512;x++){
+   const i=(y*512+x)*4,v=h(x,y);
+   if(kind==='normal'||kind==='normalBrushed'){
+    const dx=(h(x+1,y)-h(x-1,y))*.12,dy=(h(x,y+1)-h(x,y-1))*.12;
+    const z=1/Math.hypot(dx,dy,1);
+    a[i]=Math.round(128-127*dx*z);a[i+1]=Math.round(128-127*dy*z);a[i+2]=Math.round(128+127*z);
+   }else{const rough=kind==='brushed'?.78+.22*v:.86+.14*v;
+    a[i]=a[i+1]=a[i+2]=Math.round(255*rough);}
+   a[i+3]=255;
+  }
+  g.putImageData(im,0,0);
+  const tex=new T.CanvasTexture(c);tex.wrapS=tex.wrapT=T.RepeatWrapping;
+  tex.anisotropy=Math.min(8,renderer.capabilities.getMaxAnisotropy());return tex;
+ }
+ // Broad reflection cards make steel read as metal without flooding the scene.
+ // PMREM lives only in this viewer and is cached across quality switches.
+ function studioEnvironment(){
+  const c=document.createElement('canvas');c.width=1024;c.height=512;
+  const g=c.getContext('2d'),grad=g.createLinearGradient(0,0,0,512);
+  grad.addColorStop(0,'#84929b');grad.addColorStop(.40,'#596969');
+  grad.addColorStop(.51,'#29372f');grad.addColorStop(1,'#101c1a');
+  g.fillStyle=grad;g.fillRect(0,0,1024,512);
+  for(const [x,y,w,h,col] of [[90,55,120,200,'#d9e9f0'],[605,70,100,230,'#f4d9ae'],[785,105,55,175,'#c9dee9']]){
+   const glow=g.createLinearGradient(x-35,0,x+w+35,0);
+   glow.addColorStop(0,'#4b5c5d');glow.addColorStop(.24,col);
+   glow.addColorStop(.76,col);glow.addColorStop(1,'#4b5c5d');
+   g.fillStyle=glow;g.fillRect(x,y,w,h);
+  }
+  const source=new T.CanvasTexture(c);source.mapping=T.EquirectangularReflectionMapping;
+  source.encoding=T.sRGBEncoding;
+  const generator=new T.PMREMGenerator(renderer),target=generator.fromEquirectangular(source);
+  generator.dispose();source.dispose();return target;
+ }
+ function rim(parent,name,r,x,color){
+  const o=new T.Mesh(new T.TorusGeometry(r,.0035,10,96),color);
+  o.name=name;o.rotation.y=Math.PI/2;o.position.x=x;o.castShadow=false;
+  parent.add(o);return o;
+ }
+ function build(){
+  maps={cast:texture('cast'),brushed:texture('brushed'),normal:texture('normal'),normalBrushed:texture('normalBrushed')};
+  studio=studioEnvironment();
+  detail=new T.Group();detail.name='Ultra_surface_bevels_visual_only';A.root.add(detail);
+  // Raised edge catches on EXISTING castings; no additional drive stages.
+  const metal=new T.MeshStandardMaterial({color:0x849385,roughness:.42,metalness:.65,envMapIntensity:.75});
+  const motor=new T.Group();A.nodes.motor.add(motor);motor.name='Ultra_motor_flange_edge';
+  rim(motor,'Ultra_motor_existing_flange_rim',.271,.385,metal);
+  const chamber=new T.Group();A.spin.coupling.add(chamber);chamber.name='Ultra_coupling_cast_edges';
+  rim(chamber,'Ultra_coupling_left_shell_bevel',.199,-.150,metal);
+  rim(chamber,'Ultra_coupling_right_shell_bevel',.199,.150,metal);
+  detail.userData.groups=[motor,chamber];
+  detail.visible=false;motor.visible=false;chamber.visible=false;
+ }
+ function syncEnvironment(inspection){if(!inspection)scene.environment=activeStudio()?studio.texture:baseEnvironment;}
+ function activeStudio(){return bounce.visible&&!!studio;}
+ function apply(active,inspection){
+  if(active&&!maps)build();
+  if(detail){detail.visible=active;for(const group of detail.userData.groups)group.visible=active;}
+  bounce.visible=active;syncEnvironment(inspection);
+  for(const mat of A.materials){
+   if(!mat.userData.finishKey)continue;
+   if(active){
+    if(!original.has(mat))original.set(mat,{roughnessMap:mat.roughnessMap,normalMap:mat.normalMap,normalScale:mat.normalScale});
+    const finish=mat.userData.finishKey;
+    if(mat.roughnessMap&&finish!=='rubber')mat.roughnessMap=finish==='steel'||finish==='chrome'||finish==='bearing'||finish==='machined'||finish==='roller'||finish==='hub'?maps.brushed:maps.cast;
+    if(mat.normalMap&&finish!=='rubber')mat.normalMap=maps.normal;
+    else if(['steel','machined','bearing','roller','hub','chrome'].includes(finish)){mat.normalMap=maps.normalBrushed;mat.normalScale=new T.Vector2(.045,.045);}
+   }else if(original.has(mat)){
+    const old=original.get(mat);mat.roughnessMap=old.roughnessMap;mat.normalMap=old.normalMap;mat.normalScale=old.normalScale;
+   }
+   mat.needsUpdate=true;
+  }
+  key.shadow.radius=active?2:3;
+  fill.intensity=active?.34:.46;
+  renderer.shadowMap.needsUpdate=true;
+ }
+ return{apply,syncEnvironment,get active(){return bounce.visible;},get detail(){return detail;}};
+}
 const A=createAssembly(T,renderer,scene),PARTS=A.parts,PMAP=Object.fromEntries(PARTS.map(p=>[p.id,p]));
+const ultraFinish=createUltraFinish(T,A,renderer,scene,key,fill);
 // Documented catalog service *studies*, not a list of installed accessories.
 const SERVICE_STUDIES=Object.freeze({
  coupling:[['Oil sight glass','شیشهٔ بازدید روغن','02_coupling_oil_sight_glass_catalog_study'],['Fill plug','درپوش پرکردن','02_fill_plug_catalog_study'],['Fusible plugs','درپوش‌های ذوب‌شو','02_fusible_plug_catalog_study_0']],
@@ -4785,7 +4882,7 @@ function enterInside(id){
  showCard();refreshUI();applyLook();updateCameraTargets();cam.r=cam.tr;cam.x=cam.tx;cam.y=cam.ty;cam.z=cam.tz;renderer.shadowMap.needsUpdate=true;dirty=true;
 }
 function exitInside(toAssembly){
- if(!S.inside)return;const prev=insideRestore;S.inside=false;S.inspectDetail=false;S.inspectColors=true;inspector.disable();
+ if(!S.inside)return;const prev=insideRestore;S.inside=false;S.inspectDetail=false;S.inspectColors=true;inspector.disable();ultraFinish.syncEnvironment(false);
  S.sel=toAssembly?null:prev?.sel||null;S.isolate=toAssembly?false:prev?.isolate||false;S.play=prev?.play??!reduced;S.auto=prev?.auto||false;S.section=prev?.section||false;S.render=prev?.render||'solid';setInspectionSpeed(prev?.speed??1);
  expTarget=prev?.expTarget||0;expCur=prev?.expCur||0;applyExplode();$('explode').value=Math.round(expTarget*100);$('exv').textContent=Math.round(expTarget*100)+'%';paintRange($('explode'));
  if(prev?.camera)Object.assign(cam,prev.camera);S.userZoom=toAssembly?false:prev?.userZoom||false;S.userPan=toAssembly?false:prev?.userPan||false;if(toAssembly){cam.az=cam.taz=HOME.az;cam.el=cam.tel=HOME.el;}insideRestore=null;camera.up.set(0,1,0);showCard();refreshUI();setRender(S.render);applyLook();dirty=true;
@@ -4862,9 +4959,21 @@ window.addEventListener('keydown',e=>{if(e.ctrlKey||e.altKey||e.metaKey||e.repea
 let viewW=1,viewH=1;
 function compactCard(){return innerWidth<=760&&innerHeight>560;}
 function setProjection(){if(!viewW||!viewH)return;let ox=0,oy=0;if(S.inside){const r=inspectionRect();ox=viewW/2-(r.x+r.w/2);oy=viewH/2-(r.y+r.h/2);}else{ox=S.sel&&!compactCard()?Math.min(145,viewW*.19):0;oy=S.sel&&compactCard()?viewH*.20:0;}camera.aspect=viewW/viewH;camera.near=S.inside?.002:.025;camera.setViewOffset(viewW,viewH,ox,oy,viewW,viewH);camera.updateProjectionMatrix();dirty=true;}
-function resize(){const r=stage.getBoundingClientRect();viewW=Math.max(1,r.width-2);viewH=Math.max(1,r.height-2);renderer.setSize(viewW,viewH,false);setProjection();if(!S.userZoom)updateCameraTargets();if(typeof gravityFoldTouched!=='undefined'&&!gravityFoldTouched)setGravityFold(innerWidth<=760);dirty=true;}
+function resize(){const r=stage.getBoundingClientRect();viewW=Math.max(1,r.width-2);viewH=Math.max(1,r.height-2);if(S.quality==='ultra')renderer.setPixelRatio(ultraPixelRatio());renderer.setSize(viewW,viewH,false);setProjection();if(!S.userZoom)updateCameraTargets();if(typeof gravityFoldTouched!=='undefined'&&!gravityFoldTouched)setGravityFold(innerWidth<=760);dirty=true;}
 const resizeObserver=new ResizeObserver(resize);resizeObserver.observe(stage);
-function setQuality(value){S.quality=value;const dpr=Math.min(devicePixelRatio||1,value==='high'?2:value==='low'?.75:1.5);renderer.setPixelRatio(dpr);renderer.shadowMap.enabled=value!=='low';key.shadow.mapSize.set(value==='high'?2048:1024,value==='high'?2048:1024);if(key.shadow.map){key.shadow.map.dispose();key.shadow.map=null;}renderer.shadowMap.needsUpdate=true;A.materials.forEach(m=>m.needsUpdate=true);$('quality').value=value;resize();dirty=true;}
+// Limit the render target to ~5 megapixels, even on very high-DPR displays.
+function ultraPixelRatio(){return Math.min(Math.max(1.75,devicePixelRatio||1),2.5,Math.sqrt(5000000/Math.max(1,viewW*viewH)));}
+function setQuality(value){
+ if(!['low','balanced','high','ultra'].includes(value))value='balanced';
+ S.quality=value;
+ renderer.setPixelRatio(value==='ultra'?ultraPixelRatio():Math.min(devicePixelRatio||1,value==='high'?2:value==='low'?.75:1.5));
+ renderer.shadowMap.enabled=value!=='low';
+ const shadowSize=value==='ultra'?Math.min(3072,renderer.capabilities.maxTextureSize||2048):value==='high'?2048:1024;
+ if(key.shadow.mapSize.x!==shadowSize){key.shadow.mapSize.set(shadowSize,shadowSize);if(key.shadow.map){key.shadow.map.dispose();key.shadow.map=null;}}
+ ultraFinish.apply(value==='ultra',S.inside);
+ renderer.shadowMap.needsUpdate=true;
+ $('quality').value=value;resize();dirty=true;
+}
 $('quality').addEventListener('change',e=>setQuality(e.target.value));
 const boxTmp=new T.Box3(),corner=new T.Vector3(),dir=new T.Vector3(),right=new T.Vector3(),up=new T.Vector3(),center=new T.Vector3();
 function viewBounds(){if(S.inside)return inspector.focus().box;if(S.sel){const p=PMAP[S.sel];return p.bounds.clone().translate(p.explodeV.clone().multiplyScalar(smooth(expCur)));}const box=new T.Box3(new T.Vector3(-2.4,.02,-1.19),new T.Vector3(2.4,.14,1.43));for(const p of PARTS)box.union(boxTmp.copy(p.bounds).translate(p.explodeV.clone().multiplyScalar(smooth(expCur))));return box;}

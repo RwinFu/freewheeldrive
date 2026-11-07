@@ -24,3 +24,23 @@ These are Markdown workflow references, not installed FreeCAD, Blender, or CAD p
   uses packaged Chromium/ffmpeg and additional r160 loader modules; these are
   not shipped with the public repository. See
   [the local skill's SKILL.md](code-cinema/SKILL.md) for its workflows.
+
+## Additional pinned GitHub guidance for the Ultra tier
+
+Installed as local project-readable agent-skill references and linked into
+`~/.claude/skills/` for this workspace (links are local, not shipped):
+
+- [`web-3d-modeling-workflow`](web-3d-modeling-workflow/SKILL.md), pinned to
+  [`wodelt-tishellor/web-3d-modeling-workflow@49dea3e`](https://github.com/wodelt-tishellor/web-3d-modeling-workflow/tree/49dea3ea2914683be8c60772d5933d9298dd793a),
+  MIT. Includes its complete `references/` and [license](web-3d-modeling-workflow/LICENSE).
+- [`threejs-quality-pack`](threejs-quality-pack/), the **lighting, materials,
+  performance, postprocessing, product-viewer and testing** skill directories
+  from [`cesartevisual/threejs-skills@84f9bcb`](https://github.com/cesartevisual/threejs-skills/tree/84f9bcb4bea1f7a28d57fe7f0af78f7f9c3dc467),
+  MIT ([license](threejs-quality-pack/LICENSE)). Only the relevant Markdown
+  guidance and its referenced profiling worksheet are installed, not unrelated
+  R3F/WebGPU packages or executable code.
+
+Skills are **instructions**, not installed renderers or new inherent assistant
+capabilities. In particular, the viewer stays on embedded Three.js r128; each
+example/API must be checked for r128 support before implementation. The Ultra
+changes are documented in the [toolchain audit](../docs/toolchain-audit.md).

@@ -30,6 +30,24 @@ npm test
 
 The viewer itself needs no npm packages and continues to ship embedded Three.js r128. Test-only dependencies construct the scene without WebGL using both r128 and a parallel r186 alias, checking 12 part bounds, drive/lock/runback poses, all 12 overview/detail inspection views, service features, desktop/mobile camera projection of their focus bounds, coupling wheel visibility and material restoration after inspection. This is not a browser migration or visual sign-off. The Pages workflow validates these checks before deploying. See [realism and evidence verification](docs/realism-verification.md), [connection audit](docs/connection-audit.md), [real-product comparison](docs/comparable-drive-review.md), [toolchain audit](docs/toolchain-audit.md), [real-machine gap assessment](docs/real-machine-gap.md), [drive dimensions and ratios](docs/drive-dimensions.md), [component audit](docs/component-audit.md), [catalog service audit](docs/drive-catalog-audit.md) and [dimensional reference audit](docs/reference-audit.md) for what was checked and what remains unresolved.
 
+## Ultra · studio quality
+
+The **Rendering quality** menu now offers **Ultra** alongside Balanced, High
+and Low, in English and Persian. Ultra is an optional, GPU-intensive **live
+viewer** mode: 1.75–2.5× render pixel ratio (limited to about 5 million
+pixels), up to 3072² shadow resolution subject to GPU limits, finer seeded
+cast/machined microfinish maps, small actual bevel-highlight meshes on existing
+motor/coupling rims, a separately prefiltered studio reflection environment, directional machined
+metal relief, and a warmer floor bounce with restrained cool fill.
+Changes are reversible on switching modes; the default remains Balanced.
+These decisions follow the supplied Code Cinema ZIP and pinned MIT GitHub
+[Three.js/Web 3D skill references](.agent-skills/README.md); the installed
+Markdown guides are not rendering plug-ins. Its **film-only** temporal multisampling, depth of field, bloom,
+grading and audio pipeline cannot be enabled by a WebGL quality dropdown and
+are not presented as such. For an offline movie use the separate film source
+below. Ultra is not photogrammetry or a verified reconstruction of installed
+hardware. If the browser or phone struggles, return to Balanced or Low.
+
 ## Code Cinema film (concept only)
 
 A [7.2-second browser-rendered film with synthetic sound](films/clinker-drive/clinker-drive-concept.mp4)
