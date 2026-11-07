@@ -2622,7 +2622,7 @@ THE SOFTWARE.
   const equivalentRadius=cfg.driverRadius/cfg.drivenRadius*cfg.beltRadius;
   const gravityAlpha=cfg.gravity*Math.sin(cfg.inclineAngle)*cfg.inertiaFactor/equivalentRadius;
   let state,accumulator=0,slipFraction=0;
-  function reset(){accumulator=0;slipFraction=0;state={phase:'drive',backstopTest:false,backstopInstalled:true,omega:0,inputAngle:0,outputAngle:0,drumAngle:0,conveyorTravel:0,lock:0,rollback:0,reverseOrigin:null,testAge:0,time:0};}
+  function reset(){accumulator=0;slipFraction=0;state={phase:'drive',backstopTest:false,backstopInstalled:true,omega:0,motorOmega:0,motorAngle:0,inputAngle:0,outputAngle:0,drumAngle:0,conveyorTravel:0,lock:0,rollback:0,reverseOrigin:null,testAge:0,time:0};}
   reset();
   function setBackstop(on){on=!!on;if(state.backstopTest===on)return;state.backstopTest=on;state.phase=on?'coasting':'drive';state.testAge=0;state.reverseOrigin=null;state.rollback=0;state.lock=0;}
   function setInstalled(on){
@@ -2640,6 +2640,11 @@ THE SOFTWARE.
   }
   function step(dt){
    state.time+=dt;let delta=0;
+   // An induction motor drives the pump; the turbine/gearbox input follows the load.
+   // First-order curves are for visual education only, NOT a Voith TVV sizing curve.
+   state.motorOmega+=((state.backstopTest?0:cfg.inputOmega)-state.motorOmega)*
+    (1-Math.exp(-dt*(state.backstopTest?2.2:5)));
+   state.motorAngle+=state.motorOmega*dt;
    if(!state.backstopTest){state.omega+=(cfg.inputOmega/cfg.ratio-state.omega)*(1-Math.exp(-dt*3.5));delta=state.omega*dt;}
    else{
     state.testAge+=dt;
@@ -2663,7 +2668,7 @@ THE SOFTWARE.
    state.outputAngle+=delta;state.inputAngle+=delta*cfg.ratio;state.drumAngle+=delta*cfg.driverRadius/cfg.drivenRadius;state.conveyorTravel+=delta*equivalentRadius*(1-slipFraction);
   }
   function advance(realDt,playing,speed){if(!playing||!Number.isFinite(realDt)||realDt<=0||!Number.isFinite(speed)||speed<=0)return;accumulator+=Math.min(realDt,.25)*Math.min(speed,2.2);while(accumulator+1e-12>=cfg.step){step(cfg.step);accumulator=Math.max(0,accumulator-cfg.step);}}
-  return Object.freeze({advance,reset,setBackstop,setInstalled,setSlip(v){if(!Number.isFinite(v)||v<0||v>=1)throw new RangeError('Invalid slip fraction');slipFraction=v;},snapshot:()=>Object.assign({},state,{rollbackDistance:state.rollback*equivalentRadius,gravityAlpha}),config:Object.freeze(Object.assign({},cfg,{equivalentRadius,gravityAlpha}))});
+  return Object.freeze({advance,reset,setBackstop,setInstalled,setSlip(v){if(!Number.isFinite(v)||v<0||v>=1)throw new RangeError('Invalid slip fraction');slipFraction=v;},snapshot:()=>Object.assign({},state,{rollbackDistance:state.rollback*equivalentRadius,couplingSlipOmega:state.motorOmega-state.omega*cfg.ratio,gravityAlpha}),config:Object.freeze(Object.assign({},cfg,{equivalentRadius,gravityAlpha}))});
  }
  /* Shared demonstrator geometry: lever travel is an arc, not an unbounded tangent.
     These thresholds are illustrative, not an electrical safety design. */
@@ -2691,7 +2696,7 @@ function create(T,opt){
   freewheel:{title:'بک‌استاپ رولر–رمپ (کلاچ یک‌طرفه)',detail:'جزئیات رولر، فنر و جیب',note:'پوسته و راهنما برش خورده‌اند تا رولر دیده شود. فنر از سمت باز، پیستون را به گوهٔ تنگ می‌راند. در سرویس کلینکر، همین جیب‌ها با گردوغبار و گریس قدیمی پر می‌شوند و بیشترین علت از کار افتادن بک‌استاپ‌اند.',view:[0,.025],detailView:[0,0],roles:['roller','spring','plunger','cam','race','hub']},
   gearbox:{title:'داخل گیربکس',detail:'جزئیات جفت چرخ‌دنده',note:'پوسته و امتداد محور برای وضوح برش خورده‌اند؛ دندانه‌ها ساده‌شده‌اند، نه پروفیل ساخت.',view:[-.88,.23],detailView:[-.88,.24],roles:['pinion','gear','inputShaft','outputShaft']},
   motor:{title:'روتور و فن موتور',detail:'جزئیات فن پشت موتور',note:'اجزای موجود: روتور، شفت و فن؛ سیم‌پیچی و ورق‌های استاتور مدل نشده‌اند.',view:[-1.05,.10],detailView:[-Math.PI/2,.025],roles:['rotor','shaft','fan']},
-  coupling:{title:'داخل کوپلینگ',detail:'جزئیات بوش الاستومری',note:'فلنج و بستِ جلو فقط در این نما برش خورده‌اند؛ شش بوش و فلنج عقب دیده می‌شوند.',view:[Math.PI/2,.025],detailView:[Math.PI/2,.025],roles:['bush','couplingHub']},
+  coupling:{title:'داخل کوپلینگ',detail:'پمپ و توربین سیال',note:'چرخ پمپ به موتور و چرخ توربین به ورودی گیربکس وصل است؛ انتقال نیرو از سیال است، نه تماس مستقیم پره‌ها. ابعاد و منحنی راه‌اندازی صرفاً نمایشی‌اند.',view:[Math.PI/2,.025],detailView:[Math.PI/2,.025],roles:['pump','turbine','bush','couplingHub']},
   drum:{title:'محور داخلی درام',detail:'جزئیات اتصال توپی',note:'پوسته حذف و امتداد شفت برش خورده؛ فقط محور و توپی‌های موجود نمایش داده می‌شوند.',view:[.68,.25],detailView:[.65,.22],roles:['shaft','drumHub']},
   conveyor:{title:'نوار، خرپای گالری و غلتک‌ها',detail:'جزئیات غلتک تکیه‌گاهی',note:'نوار، بار و سینی محافظ کنار رفته‌اند تا غلتک‌ها، قاب و یاتاقان‌های انتهایی دیده شوند.',view:[-.4,.57],detailView:[.32,.4],roles:['supportRoller','tailRoller','frame','bearing']},
   pulley:{title:'توپی و شیارهای پولی',detail:'جزئیات شیارهای V',note:'پولی مکانیزم داخلی جداگانه ندارد؛ توپی و سه شیار واقعی مدل بررسی می‌شوند.',view:[.43,.25],detailView:[.68,.23],roles:['pulley','hub']},
@@ -2701,8 +2706,8 @@ function create(T,opt){
   scale:{title:'توزین نوار — پل توزین تک‌غلتک',detail:'لودسل و سنسور سرعت',note:'رولیک توزین روی تیر متحرکی با دو لودسل نمایشی قرار دارد. چیدمان از MSI الهام گرفته است؛ جزئیات داخلی لودسل و نصب دقیق در این مدل تأیید نشده‌اند. چرخ اصطکاکی، سرعت نوار را روی مسیر برگشتِ تمیز اندازه می‌گیرد. دقت توزین به‌اندازهٔ هم‌ترازی غلتک‌ها، فاصلهٔ اسکرت‌بورد و کیفیت کالیبراسیون خوب است — نه بیشتر.',view:[-.35,.30],detailView:[-.10,.20],roles:['weighBridge','weighIdler','loadCell','speedSensor','junctionBox']},
   sway:{title:'سنسورهای انحراف نوار',detail:'غلتک، اهرم و زاویهٔ عملکرد',note:'در نمای داخلی، پوسته کنار می‌رود و بلوک‌های کنتاکت و بادامک مفهومی دیده می‌شوند؛ جزئیات داخلی سازنده منتشر نشده است. غلتک عمودی با ۲۵ میلی‌متر فاصله از لبهٔ نوار ایستاده است. انحراف نوار، غلتک را می‌راند، اهرم می‌چرخد و کنتاکت‌ها در حدود ۱۲ درجه هشدار و ۴۵ درجه فرمان توقف می‌دهند. کابل هر سنسور به جعبهٔ ترمینال روی تیر پایین می‌رود و از آنجا به اینترلاک کارخانه.',view:[.62,.34],detailView:[1.05,.30],roles:['alignmentSwitch','feelLever','feelRoller','junctionBox']}
  };
- const labels={roller:'رولر',returnIdler:'غلتک برگشت',spring:'فنر',plunger:'پیستون',cam:'رمپ بادامک',race:'رینگ ثابت',pinion:'پینیون ورودی',gear:'چرخ‌دندهٔ خروجی',inputShaft:'محور ورودی',outputShaft:'محور خروجی',rotor:'روتور و پره‌ها',shaft:'شفت',fan:'فن پشت موتور',bush:'بوش و الاستومر',couplingHub:'فلنج و توپی عقب',fastener:'پیچ و اتصال',drumHub:'توپی‌های درام',supportRoller:'غلتک تکیه‌گاهی',tailRoller:'غلتک انتهایی',frame:'قاب',pulley:'بدنهٔ شیاردار',hub:'توپی',belt:'رشته‌های تسمه',guide:'راهنمای پیستون',marker:'نشان چرخش',bearing:'یاتاقان · ساچمه و قفسه',skirt:'اسکرت‌بورد آب‌بند',chute:'شوت تغذیه و مکش غبار',cleaner:'تیغهٔ تمیزکنندهٔ نوار',couplingShell:'پوستهٔ کوپلینگ سیال',cleanerChute:'شوت ریزش'};
- const palette={roller:0xe6edf4,spring:0xeab455,plunger:0x8bd9e7,cam:0x7da8ce,race:0x9dafbf,pinion:0x81c5de,gear:0xe3b568,inputShaft:0xc7d4df,outputShaft:0xe1e7ed,rotor:0x99b9d2,shaft:0xcbd9e5,fan:0x99b9d2,bush:0xeab05b,couplingHub:0x91adc7,fastener:0xc8d5df,drumHub:0x7193b6,supportRoller:0xc9dfed,tailRoller:0xd7b46c,frame:0x7f9bae,pulley:0x95aec8,hub:0xcdd9e2,belt:0x789dbb,guide:0x6e849c,marker:0x25394b,bearing:0xa9c7e0,returnIdler:0xa8b8c4,skirt:0x5e7a6a,chute:0x8aa0b4,cleaner:0xd9a05c,couplingShell:0x7f93a8,cleanerChute:0x8aa0b4,weighBridge:0x9fb4bd,weighIdler:0xc9dfed,loadCell:0xd9b46c,speedSensor:0x7fa0b5,junctionBox:0x8fa9b8,alignmentSwitch:0xe0c46a,feelLever:0xb9cad6,feelRoller:0x6f8798};
+ const labels={roller:'رولر',returnIdler:'غلتک برگشت',spring:'فنر',plunger:'پیستون',cam:'رمپ بادامک',race:'رینگ ثابت',pinion:'پینیون ورودی',gear:'چرخ‌دندهٔ خروجی',inputShaft:'محور ورودی',outputShaft:'محور خروجی',rotor:'روتور و پره‌ها',shaft:'شفت',fan:'فن پشت موتور',bush:'بوش و الاستومر',pump:'پمپِ متصل به موتور',turbine:'توربینِ متصل به گیربکس',couplingHub:'فلنج و توپی عقب',fastener:'پیچ و اتصال',drumHub:'توپی‌های درام',supportRoller:'غلتک تکیه‌گاهی',tailRoller:'غلتک انتهایی',frame:'قاب',pulley:'بدنهٔ شیاردار',hub:'توپی',belt:'رشته‌های تسمه',guide:'راهنمای پیستون',marker:'نشان چرخش',bearing:'یاتاقان · ساچمه و قفسه',skirt:'اسکرت‌بورد آب‌بند',chute:'شوت تغذیه و مکش غبار',cleaner:'تیغهٔ تمیزکنندهٔ نوار',couplingShell:'پوستهٔ کوپلینگ سیال',cleanerChute:'شوت ریزش'};
+ const palette={roller:0xe6edf4,spring:0xeab455,plunger:0x8bd9e7,cam:0x7da8ce,race:0x9dafbf,pinion:0x81c5de,gear:0xe3b568,inputShaft:0xc7d4df,outputShaft:0xe1e7ed,rotor:0x99b9d2,shaft:0xcbd9e5,fan:0x99b9d2,bush:0xeab05b,pump:0x8acbd4,turbine:0xd0ad79,couplingHub:0x91adc7,fastener:0xc8d5df,drumHub:0x7193b6,supportRoller:0xc9dfed,tailRoller:0xd7b46c,frame:0x7f9bae,pulley:0x95aec8,hub:0xcdd9e2,belt:0x789dbb,guide:0x6e849c,marker:0x25394b,bearing:0xa9c7e0,returnIdler:0xa8b8c4,skirt:0x5e7a6a,chute:0x8aa0b4,cleaner:0xd9a05c,couplingShell:0x7f93a8,cleanerChute:0x8aa0b4,weighBridge:0x9fb4bd,weighIdler:0xc9dfed,loadCell:0xd9b46c,speedSensor:0x7fa0b5,junctionBox:0x8fa9b8,alignmentSwitch:0xe0c46a,feelLever:0xb9cad6,feelRoller:0x6f8798};
  function classify(o){
   const part=o.userData.part,m=original.get(o).material,k=m.userData.finishKey||'';
   if(m.userData.role)return{role:m.userData.role};
@@ -2749,6 +2754,7 @@ function create(T,opt){
   if(colors&&palette[role]!==undefined){m.color.setHex(palette[role]).convertSRGBToLinear();m.metalness=['bush','belt','marker'].includes(role)?.08:.58;m.roughness=['bush','belt'].includes(role)?.5:role==='roller'?.20:.29;}
   if(role==='guide'){m.metalness=.38;m.roughness=.34;m.clippingPlanes=[planeAt(A.nodes.freewheel,0,0,false)];}
   if(role==='race'){m.clippingPlanes=[planeAt(A.nodes.freewheel,0,.058,false)];m.roughness=.31;}
+  if(id==='coupling'&&role==='couplingShell')m.clippingPlanes=[planeAt(A.nodes.coupling,2,0,false)];
   if((role==='couplingHub'||role==='fastener')&&id==='coupling')m.clippingPlanes=[planeAt(A.nodes.coupling,0,0,false)];
   if(id==='motor'&&detail&&role==='rotor')m.clippingPlanes=[planeAt(A.nodes.motor,0,-.265,false)];
   if(id==='drum'&&role==='shaft')m.clippingPlanes=[planeAt(A.nodes.drum,0,.45,false),planeAt(A.nodes.drum,0,-.45,true)];
@@ -2796,7 +2802,7 @@ function create(T,opt){
   }
   if(id==='gearbox')return[marker('pinion',pinion.getWorldPosition(V(0,0,0))),marker('gear',gear.getWorldPosition(V(0,0,0))),marker('inputShaft',point(n,-.32,.04,0)),marker('outputShaft',point(n,0,.04,.30))];
   if(id==='motor')return detail?[marker('fan',point(A.spin.motor,-.34,.13,0)),marker('shaft',point(n,-.30,.025,0))]:[marker('rotor',point(n,.12,.17,0)),marker('shaft',point(A.spin.motor,.79,.025,.025)),marker('fan',point(A.spin.motor,-.34,.13,0))];
-  if(id==='coupling')return[marker('bush',point(A.spin.coupling,.037,.115,0)),marker('couplingHub',point(A.spin.coupling,-.032,-.095,.07))];
+  if(id==='coupling')return[marker('pump',point(A.spin.coupling,-.05,.108,0)),marker('turbine',point(A.spin.couplingTurbine,.05,-.108,0)),marker('bush',point(A.spin.coupling,.037,.115,0)),marker('couplingHub',point(A.spin.coupling,-.032,-.095,.07))];
   if(id==='drum')return[marker('shaft',point(n,0,.045,0)),marker('drumHub',point(n,.36,.075,0))];
   if(id==='conveyor')return[marker('supportRoller',A.spin.support3.getWorldPosition(V(0,0,0))),marker('tailRoller',A.spin.tail.getWorldPosition(V(0,0,0))),marker('frame',point(A.transport,.80,1.07,-.82)),marker('bearing',point(A.transport,-1.9,1.065,-.90))];
   if(id==='pulley')return[marker('pulley',point(n,.075,.21,0)),marker('hub',point(n,.083,.06,0))];
@@ -3134,8 +3140,8 @@ const api=Object.freeze({create});if(typeof module!=='undefined'&&module.exports
       label: ['Fluid coupling & flange', 'کوپلینگ سیال و فلنج'],
       sub: ['Soft start · torque limiting · six bushes', 'شروع نرم · محدودسازی گشتاور · شش بوش'],
       specs: [['Train', 'مسیر انتقال', 'Fluid coupling + flexible flange', 'کوپلینگ سیال + فلنج انعطاف‌پذیر'],
-        ['Start torque', 'گشتاور راه‌اندازی', 'Limited to ≈ 110–140 % rated', 'محدود به ≈ ۱۱۰ تا ۱۴۰ درصد نامی'],
-        ['Slip at rated', 'لغزش در بار نامی', '≈ 3–5 %', '≈ ۳ تا ۵ درصد'],
+        ['Start torque', 'گشتاور راه‌اندازی', 'Unspecified · depends on coupling/fill', 'تعیین‌نشده · وابسته به کوپلینگ و پرشدگی'],
+        ['Slip at rated', 'لغزش در بار نامی', 'Unspecified · start-up differential is illustrative', 'تعیین‌نشده · اختلاف سرعت راه‌اندازی نمایشی است'],
         ['Maintenance', 'نگهداری', 'Oil level, fusible plugs, seal ring', 'سطح روغن، درپوش ذوب‌شو، رینگ آب‌بند'],
         ['Catalog service study', 'مطالعهٔ سرویس کاتالوگی', 'Voith T-family sight glass · not an installed-model claim', 'شیشهٔ بازدید خانوادهٔ T فوئت · مدل نصب‌شده تأیید نشده']]
     },
@@ -3380,7 +3386,7 @@ const api=Object.freeze({create});if(typeof module!=='undefined'&&module.exports
     pinion: ['Input pinion', 'پینیون ورودی'], gear: ['Output gear', 'چرخ‌دندهٔ خروجی'],
     inputShaft: ['Input shaft', 'محور ورودی'], outputShaft: ['Output shaft', 'محور خروجی'],
     rotor: ['Rotor and fins', 'روتور و پره‌ها'], shaft: ['Shaft', 'شفت'], fan: ['Rear fan', 'فن پشت موتور'],
-    bush: ['Elastomer bush', 'بوش و الاستومر'], couplingHub: ['Flange and rear hub', 'فلنج و توپی عقب'],
+    bush: ['Elastomer bush', 'بوش و الاستومر'], pump: ['Motor-side pump wheel', 'چرخ پمپ سمت موتور'], turbine: ['Gearbox-side turbine wheel', 'چرخ توربین سمت گیربکس'], couplingHub: ['Flange and rear hub', 'فلنج و توپی عقب'],
     fastener: ['Fastener', 'پیچ و اتصال'], drumHub: ['Drum hubs', 'توپی‌های درام'],
     supportRoller: ['Carrying idler', 'غلتک تکیه‌گاهی'], tailRoller: ['Tail drum', 'غلتک انتهایی'],
     frame: ['Frame', 'قاب'], pulley: ['Grooved body', 'بدنهٔ شیاردار'], hub: ['Hub', 'توپی'],
@@ -3428,9 +3434,9 @@ const api=Object.freeze({create});if(typeof module!=='undefined'&&module.exports
     },
     coupling: {
       title: ['Inside the fluid coupling', 'داخل کوپلینگ'],
-      detail: ['Elastomer bush detail', 'جزئیات بوش الاستومری'],
-      note: ['Front flange and fastener are sectioned in this view only; the six bushes and the rear flange are visible.',
-        'فلنج و بستِ جلو فقط در این نما برش خورده‌اند؛ شش بوش و فلنج عقب دیده می‌شوند.']
+      detail: ['Fluid pump and turbine wheels', 'چرخ پمپ و توربین سیال'],
+      note: ['Pump wheel follows the motor; turbine wheel follows the gearbox input. Fluid carries torque without direct blade contact. Blade geometry and slip curve are illustrative, not a selected coupling.',
+        'چرخ پمپ همراه موتور و چرخ توربین همراه ورودی گیربکس می‌گردد. گشتاور از راه سیال منتقل می‌شود و پره‌ها تماس مستقیم ندارند. هندسهٔ پره و منحنی لغزش، مدل انتخاب‌شدهٔ صنعتی نیستند.']
     },
     drum: {
       title: ['Drum shaft internals', 'محور داخلی درام'],
@@ -3686,9 +3692,9 @@ const parts=[
  fa:'موتور القایی چهارقطبی ۲۰۰ کیلووات با بدنهٔ پره‌دار و خنک‌کاری TEFC. در ناحیهٔ غبار کلینکر، درجهٔ حفاظت IP55 و کلاس عایقی F و هیتر ضد رطوبت به‌اندازهٔ توان نامی تعیین‌کننده‌اند. راه‌اندازی نوار شیب‌دارِ پُر، گشتاور راه‌اندازی بالایی می‌خواهد؛ به همین دلیل کوپلینگ سیال بین موتور و گیربکس قرار می‌گیرد.',
  specs:[['Reference nameplate','200 kW · 1,487 rpm'],['Enclosure / insulation','TEFC · IP55 · class F'],['Starting','DOL or soft starter + fluid coupling'],['Environment','Clinker dust, 40–55 °C gallery']]},
 {id:'coupling',num:'02',label:'Fluid coupling & flange',short:'Fluid coupling',sub:'Soft start · torque limiting · six bushes',axis:'X',explode:[-.60,.56,.28],anchor:[0,.19,0],
- desc:'A fluid coupling shell with radial fins and fusible plugs surrounds two keyed flange hubs joined by six elastomer bushes. The oil circuit limits breakaway torque and stretches the start of a fully loaded inclined belt, so the motor and the backstop never see the full stall torque.',
- fa:'کوپلینگ سیال (هیدرولیکی) با پوستهٔ پره‌دار و درپوش‌های قابل‌ذوب، دو توپی فلنجی کلیدخورده و شش بوش الاستومری را در بر می‌گیرد. مدار روغن، گشتاور راه‌اندازی را محدود و زمان راه‌اندازی نوارِ پُر را کشیده می‌کند؛ نتیجه: موتور و بک‌استاپ هرگز گشتاور قفل‌شدگی کامل را نمی‌بینند.',
- specs:[['Train','Fluid coupling + flexible flange'],['Start torque','Limited to ≈ 110–140 % rated'],['Slip at rated','≈ 3–5 %'],['Maintenance','Oil level, fusible plugs, seal ring'],['Catalog service study','Voith T-family sight glass · installed type unknown']]},
+ desc:'A fluid coupling shell with radial fins and fusible plugs surrounds two keyed flange hubs joined by six elastomer bushes. Pump and turbine transfer torque through fluid without blade contact, allowing a motor/load speed difference during start-up. Torque limits and operating slip depend on the selected coupling and fill; they are not calculated here.',
+ fa:'کوپلینگ سیال (هیدرولیکی) با پوستهٔ پره‌دار و درپوش‌های قابل‌ذوب، دو توپی فلنجی کلیدخورده و شش بوش الاستومری را در بر می‌گیرد. پمپ و توربین بدون تماس مستقیم پره‌ها، گشتاور را از راه سیال منتقل می‌کنند و هنگام راه‌اندازی می‌توانند اختلاف سرعت داشته باشند. حد گشتاور و لغزش واقعی به مدل و میزان پرشدگی بستگی دارند و اینجا محاسبه نشده‌اند.',
+ specs:[['Train','Fluid coupling + flexible flange'],['Start torque','Unspecified · depends on actual coupling/fill'],['Slip at rated','Unspecified · illustrative start-up differential'],['Maintenance','Oil level, fusible plugs, seal ring'],['Catalog service study','Voith T-family sight glass · installed type unknown']]},
 {id:'gearbox',num:'03',label:'Right-angle gearbox',short:'Right-angle gearbox',sub:'Bevel stage 3:1 · plant train ≈ 32.8:1',axis:'X → Z',explode:[-.15,.62,-.18],anchor:[-.08,.37,0],
  desc:'A perpendicular input and output shaft with a 12:36 bevel-gear study inside the ribbed housing: the two pitch cones share one apex, so the tooth rings roll together at a common pitch point with an exact 3:1 angular ratio. A real clinker drive is a two-stage bevel-helical unit of roughly 32.8:1; only one bevel stage is modelled here so the mesh can be inspected.',
  fa:'محور ورودی و خروجی عمود بر هم با جفت چرخ‌دندهٔ مخروطی ۱۲:۳۶ در پوستهٔ پره‌دار. مخروط‌های گام یک رأس مشترک دارند، بنابراین دندانه‌ها روی یک نقطهٔ گام مشترک می‌غلطند و نسبت ۳:۱ دقیقاً حفظ می‌شود. درایو واقعی کلینکر یک واحد دو مرحله‌ای مخروطی-مارپیچ با نسبت حدود ۳۲٫۸:۱ است؛ در این مدل فقط یک مرحلهٔ مخروطی ساخته شده تا درگیری دنده‌ها قابل بررسی باشد.',
@@ -3830,6 +3836,18 @@ const GEAR=(function(){
   const n=node('coupling','02_coupling_X',-.10,.72,.30),M=(k,h)=>mat('coupling',k,h);
   n.userData.anchor.set(0,0.2,0);
   const s=sgrp(n,'coupling_spin');spin.coupling=s;
+  // Separate pump (motor) and turbine (gearbox input) shaft angles: no rigid link
+  // through the hydrodynamic working chamber. Blade shapes are conceptual.
+  const pumpMat=M('steel').clone();pumpMat.name='coupling_pump_blades';
+  pumpMat.userData={part:'coupling',role:'pump',finishKey:'steel'};allMats.push(pumpMat);
+  const turbineMat=M('steel').clone();turbineMat.name='coupling_turbine_blades';
+  turbineMat.userData={part:'coupling',role:'turbine',finishKey:'steel'};allMats.push(turbineMat);
+  const pump=sgrp(s,'02_pump_wheel_motor_driven');
+  M3(pump,cylX(.126,.016,32),pumpMat,-.050);
+  M3(pump,ringGeo(10,bx(.032,.032,.008).translate(0,.095,0)),pumpMat,-.040);
+  const turbine=sgrp(n,'02_turbine_wheel_gearbox_driven');spin.couplingTurbine=turbine;
+  M3(turbine,cylX(.126,.016,32),turbineMat,.050);
+  M3(turbine,ringGeo(10,bx(.032,.032,.008).translate(0,.095,0),.12),turbineMat,.040);
   const st=dbl(M('steel',1));
   M3(s,cylX(0.16,0.052,56),st,-0.059);M3(s,cylX(0.16,0.052,56),st,0.059);
   M3(s,cylX(0.075,0.045,32),st,-0.1075);M3(s,cylX(0.07,0.045,32),st,0.1075);
@@ -4557,8 +4575,8 @@ function animate(motion){
  // Angles are NOT wrapped: geared, idler and ball rotations are multiples of a shaft angle, and a
  // 2*pi wrap of the source would jump them by a fraction of a turn every revolution. The input train
  // turns against the output train so the bevel pair rolls together at its pitch point (see audit).
- const am=-motion.inputAngle,ao=-motion.outputAngle,ad=-motion.drumAngle;
- spin.motor.rotation.x=am;spin.coupling.rotation.x=am;spin.gbIn.rotation.x=am;spin.gbOut.rotation.x=ao;spin.freewheel.rotation.x=ao;spin.pulley.rotation.x=ao;spin.drum.rotation.x=ad;spin.tail.rotation.x=-motion.conveyorTravel/MD.beltCenterRadius;
+ const am=-(motion.motorAngle===undefined?motion.inputAngle:motion.motorAngle),ai=-motion.inputAngle,ao=-motion.outputAngle,ad=-motion.drumAngle;
+ spin.motor.rotation.x=am;spin.coupling.rotation.x=am;spin.couplingTurbine.rotation.x=ai;spin.gbIn.rotation.x=ai;spin.gbOut.rotation.x=ao;spin.freewheel.rotation.x=ao;spin.pulley.rotation.x=ao;spin.drum.rotation.x=ad;spin.tail.rotation.x=-motion.conveyorTravel/MD.beltCenterRadius;
  for(const [i,r] of idlerRotors.entries())if(!(i===0&&motion.idlerJam))r.rotation.x=-motion.conveyorTravel/r.userData.contactRadius;
 
  for(const b of bearingUnits){const a=b.shaftKey==='pulley'?ao:ad;b.cage.rotation.x=a*b.cageRatio;for(const ball of b.balls)ball.rotation.x=a*b.ballLocalRatio;}
@@ -4857,7 +4875,7 @@ function drawPocket(m){
 }
 function updateMonitor(m){
  if(S.inside&&S.sel==='freewheel'){const p=A.clutch.poseFromLock(m.lock);setText('inspectionGap',(Math.max(0,p.rampGap)*1000).toFixed(3)+' mm');setText('inspectionSpring',(p.springLength*1000).toFixed(2)+' mm');}
- const frozen=!S.play||S.speed===0||S.demoTrip;setText('driveStatus',S.demoTrip?(isFa()?'توقف نمایشی انحراف':'SIMULATED SWAY STOP'):frozen?t('paused'):t('st'+m.phase.charAt(0).toUpperCase()+m.phase.slice(1)));$('statusDot').style.background=frozen?'#84948a':m.phase==='locked'||m.phase==='runback'?'#dd8067':'#8bab8c';const rate=frozen?0:m.omega*S.speed*60/TAU;setText('rpmIn',(rate*modelSpec.gearRatio).toFixed(1));setText('rpmOut',rate.toFixed(1));setText('rollback',(m.rollback*180/PI).toFixed(2)+'°');const sec=Math.floor(m.time);setText('statusTime',String(Math.floor(sec/60)).padStart(2,'0')+':'+String(sec%60).padStart(2,'0'));
+ const frozen=!S.play||S.speed===0||S.demoTrip;setText('driveStatus',S.demoTrip?(isFa()?'توقف نمایشی انحراف':'SIMULATED SWAY STOP'):frozen?t('paused'):t('st'+m.phase.charAt(0).toUpperCase()+m.phase.slice(1)));$('statusDot').style.background=frozen?'#84948a':m.phase==='locked'||m.phase==='runback'?'#dd8067':'#8bab8c';const rate=frozen?0:m.omega*S.speed*60/TAU,motorRate=frozen?0:m.motorOmega*S.speed*60/TAU;setText('rpmIn',motorRate.toFixed(1));setText('rpmOut',rate.toFixed(1));setText('rollback',(m.rollback*180/PI).toFixed(2)+'°');const sec=Math.floor(m.time);setText('statusTime',String(Math.floor(sec/60)).padStart(2,'0')+':'+String(sec%60).padStart(2,'0'));
  const messages={drive:t('msgDrive'),coasting:t('msgCoasting'),engaging:t('msgEngaging'),locked:t('msgLocked'),runback:t('msgRunback')};setText('demoStatus',frozen?t('frozenMsg'):messages[m.phase]);setText('travelAmount',(m.rollbackDistance*1000).toFixed(1)+' mm');setText('demoState',m.phase==='locked'?t('stateHeld'):m.phase==='runback'?t('stateRunback'):S.noBackstop?t('stateCompare'):t('stateInstalled'));$('gravityPanel').classList.toggle('danger',m.phase==='runback');$('gravityPanel').classList.toggle('held',m.phase==='locked');drawPocket(m);
 }
 /* Clean, solid, named-node export. View-only clipping, highlights and wires never leak into GLB. */
@@ -4889,13 +4907,13 @@ function kinematics(){
   axis:new T.Vector3(1,0,0).transformDirection(node.matrixWorld).toArray(),
   centre:node.getWorldPosition(new T.Vector3()).toArray(),
   quaternion:node.getWorldQuaternion(q).toArray()});};
- for(const k of ['motor','coupling','gbIn','gbOut','freewheel','pulley','drum','tail'])add(k,A.spin[k]);
+ for(const k of ['motor','coupling','couplingTurbine','gbIn','gbOut','freewheel','pulley','drum','tail'])add(k,A.spin[k]);
  for(let i=0;i<7;i++)add('support'+i,A.spin['support'+i]);
  add('roller',A.inspectionRollers[0].ro);
  for(const u of A.bearingUnits){add('inner:'+u.unitName,u.rot);add('station:'+u.unitName,u.station);add('cage:'+u.unitName,u.cage);add('ball:'+u.unitName,u.balls[0]);}
  const m=mechanics.snapshot(),e=A.audit();
  return{version:'4.2.0-cement',time:m.time,phase:m.phase,omega:m.omega,lock:m.lock,
-  inputAngle:m.inputAngle,outputAngle:m.outputAngle,drumAngle:m.drumAngle,conveyorTravel:m.conveyorTravel,
+  motorAngle:m.motorAngle,couplingSlipOmega:m.couplingSlipOmega,inputAngle:m.inputAngle,outputAngle:m.outputAngle,drumAngle:m.drumAngle,conveyorTravel:m.conveyorTravel,
   nodes:list,gear:e.gearMesh,bearings:e.bearings,loads:e.loads.map(l=>l.position),
   constants:{driverRadius:A.constants.driverRadius,drivenRadius:A.constants.drivenRadius,beltRadius:A.constants.beltRadius,
    supportRollerRadius:.095,tailDrumRadius:.243,headDrumContactRadius:.243,beltThickness:.014,

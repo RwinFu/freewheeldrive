@@ -21,14 +21,23 @@ const m=spec.model;
 const config={ratio:m.gearRatio,driverRadius:m.driverPitchRadius,drivenRadius:m.drivenPitchRadius,beltRadius:m.beltCenterRadius,rollbackLimit:clutch.config.releasedAngle};
 const mechanics=mechanicsApi.create(config);
 const advance=(seconds)=>{for(let i=0;i<seconds*60;i++)mechanics.advance(1/60,true,1)};
+// Voith-style hydrodynamic coupling is not a rigid shaft: pump accelerates before turbine.
+advance(.25);
+let startup=mechanics.snapshot();
+assert.ok(startup.motorOmega>startup.omega*config.ratio,'pump must lead turbine at start');
+assert.ok(startup.motorAngle>startup.inputAngle,'pump must accumulate start-up slip');
+close(startup.inputAngle,startup.outputAngle*config.ratio);
+
 advance(2);
 let d=mechanics.snapshot();assert.equal(d.phase,'drive');assert.ok(d.outputAngle>0);
 close(d.drumAngle,d.outputAngle*config.driverRadius/config.drivenRadius);
 close(d.conveyorTravel,d.drumAngle*config.beltRadius);
 mechanics.setBackstop(true);advance(4);d=mechanics.snapshot();assert.equal(d.phase,'locked');
 close(d.rollback,config.rollbackLimit);close(d.omega,0);
+assert.ok(d.motorOmega>=0&&d.motorOmega<startup.motorOmega,'motor must coast down after power cut');
 close(d.rollbackDistance,d.rollback*config.driverRadius/config.drivenRadius*config.beltRadius);
-mechanics.setInstalled(false);advance(2);d=mechanics.snapshot();assert.equal(d.phase,'runback');assert.ok(d.rollback>config.rollbackLimit);
+mechanics.setInstalled(false);advance(2);d=mechanics.snapshot();assert.equal(d.phase,'runback');
+assert.ok(d.omega<0&&d.motorOmega>=0,'unpowered turbine may reverse without reversing the motor');assert.ok(d.rollback>config.rollbackLimit);
 mechanics.setInstalled(true);advance(2);d=mechanics.snapshot();assert.equal(d.phase,'locked');close(d.rollback,config.rollbackLimit);
 mechanics.setBackstop(false);advance(2);d=mechanics.snapshot();assert.equal(d.phase,'drive');assert.ok(d.omega>0);
 mechanics.reset();d=mechanics.snapshot();close(d.outputAngle,0);close(d.conveyorTravel,0);
