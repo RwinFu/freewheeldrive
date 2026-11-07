@@ -28,7 +28,7 @@ npm ci
 npm test
 ```
 
-The viewer itself needs no npm packages and continues to ship embedded Three.js r128. Test-only dependencies construct the scene without WebGL using both r128 and a parallel r186 alias, checking 12 part bounds and drive/lock/runback poses. This is not a browser migration or visual sign-off. The Pages workflow validates these checks before deploying. See [real-product comparison](docs/comparable-drive-review.md), [toolchain audit](docs/toolchain-audit.md), [real-machine gap assessment](docs/real-machine-gap.md), [drive dimensions and ratios](docs/drive-dimensions.md), [component audit](docs/component-audit.md), [catalog service audit](docs/drive-catalog-audit.md) and [dimensional reference audit](docs/reference-audit.md) for what was checked and what remains unresolved.
+The viewer itself needs no npm packages and continues to ship embedded Three.js r128. Test-only dependencies construct the scene without WebGL using both r128 and a parallel r186 alias, checking 12 part bounds, drive/lock/runback poses, all 12 overview/detail inspection views, coupling wheel visibility and camera focus, and material restoration after inspection. This is not a browser migration or visual sign-off. The Pages workflow validates these checks before deploying. See [real-product comparison](docs/comparable-drive-review.md), [toolchain audit](docs/toolchain-audit.md), [real-machine gap assessment](docs/real-machine-gap.md), [drive dimensions and ratios](docs/drive-dimensions.md), [component audit](docs/component-audit.md), [catalog service audit](docs/drive-catalog-audit.md) and [dimensional reference audit](docs/reference-audit.md) for what was checked and what remains unresolved.
 
 ## Single conveyor and educational fault studies
 
