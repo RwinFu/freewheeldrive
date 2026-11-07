@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "description": "Headless geometry and kinematics checks for the offline viewer",
   "scripts": {
-    "test": "node tests/check-html.mjs && node tests/check-drive-spec.mjs && node tests/check-mechanics.mjs && node tests/check-visual-details.mjs && node tests/check-scene.mjs && node tests/check-inspection.mjs && FW_THREE_MODERN=1 node tests/check-scene.mjs && node tests/check-sway.mjs"
+    "test": "node tests/check-film.mjs && node tests/check-html.mjs && node tests/check-drive-spec.mjs && node tests/check-mechanics.mjs && node tests/check-visual-details.mjs && node tests/check-scene.mjs && node tests/check-inspection.mjs && FW_THREE_MODERN=1 node tests/check-scene.mjs && node tests/check-sway.mjs"
   },
   "devDependencies": {
     "@napi-rs/canvas": "^0.1.82",

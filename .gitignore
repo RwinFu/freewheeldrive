@@ -2,3 +2,10 @@
 .tooling/
 
 node_modules/
+
+# User-provided Code Cinema archive is installed locally; original kit has no stated redistribution license.
+.agent-skills/code-cinema/
+
+# Generated browser export and renders for optional Code Cinema study.
+films/clinker-drive/drive.glb
+films/clinker-drive/out/
