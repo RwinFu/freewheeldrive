@@ -27,6 +27,17 @@ if(THREE.SRGBColorSpace)assert.equal(assembly.textures.wood.colorSpace,THREE.SRG
 assert.equal(new Set(assembly.parts.map(p=>p.id)).size,12);
 assert.equal(assembly.audit().gearMesh.toothRatio,context.FreewheelDriveSpec.model.gearRatio);
 assert.equal(assembly.audit().bearings.length,6);
+const pump=assembly.nodes.coupling.getObjectByName('02_pump_wheel_motor_driven');
+const turbine=assembly.nodes.coupling.getObjectByName('02_turbine_wheel_gearbox_driven');
+assert.ok(pump&&turbine,'both fluid-coupling wheels must be inspectable');
+const pumpBounds=new THREE.Box3().setFromObject(pump),turbineBounds=new THREE.Box3().setFromObject(turbine);
+assert.ok(pumpBounds.max.x<turbineBounds.min.x,'pump and turbine must not mechanically touch');
+assembly.animate({motorAngle:1.5,inputAngle:1,outputAngle:1/3,drumAngle:.25,
+ conveyorTravel:.06,lock:0,backstopInstalled:true,phase:'drive',time:.25});
+assert.ok(Math.abs(assembly.spin.motor.rotation.x+1.5)<1e-9);
+assert.ok(Math.abs(assembly.spin.couplingTurbine.rotation.x+1)<1e-9);
+assert.ok(Math.abs(assembly.spin.gbIn.rotation.x-assembly.spin.couplingTurbine.rotation.x)<1e-9);
+
 for(const bearing of assembly.audit().bearings.filter(b=>b.part==='drum')){
  assert.ok(Math.abs(bearing.bore-.09)<1e-9);
  assert.ok(Math.abs(bearing.overallHeight-.2005)<1e-9,'SKF H2 envelope');
