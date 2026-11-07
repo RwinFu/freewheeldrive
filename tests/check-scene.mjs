@@ -37,6 +37,70 @@ assembly.animate({motorAngle:1.5,inputAngle:1,outputAngle:1/3,drumAngle:.25,
 assert.ok(Math.abs(assembly.spin.motor.rotation.x+1.5)<1e-9);
 assert.ok(Math.abs(assembly.spin.couplingTurbine.rotation.x+1)<1e-9);
 assert.ok(Math.abs(assembly.spin.gbIn.rotation.x-assembly.spin.couplingTurbine.rotation.x)<1e-9);
+// Coupling connection audit: each hub receives the intended shaft, but the
+// opposed rotor plates never touch (or inherit one another's angular motion).
+const partBox=name=>{
+ const o=assembly.root.getObjectByName(name);
+ assert.ok(o,`missing mechanical joint: ${name}`);
+ return new THREE.Box3().setFromObject(o);
+};
+const inputHub=partBox('02_motor_input_hub'),outputHub=partBox('02_gearbox_output_hub');
+const mdJoint=context.FreewheelDriveSpec.model;
+assert.ok(assembly.root.getObjectByName('02_motor_axial_stop_study'));
+assert.ok(assembly.root.getObjectByName('02_turbine_axial_stop_study'));
+const minimumBore=name=>{
+ const mesh=assembly.root.getObjectByName(name),a=mesh.geometry.getAttribute('position');
+ let min=Infinity;
+ for(let i=0;i<a.count;i++)min=Math.min(min,Math.hypot(a.getY(i),a.getZ(i)));
+ return min;
+};
+assert.ok(Math.abs(minimumBore('02_motor_input_hub')-mdJoint.motorHubBoreRadius)<1e-6);
+assert.ok(Math.abs(minimumBore('02_gearbox_output_hub')-mdJoint.turbineHubBoreRadius)<1e-6);
+assert.ok(mdJoint.motorHubBoreRadius>mdJoint.motorShaftRadius);
+assert.ok(mdJoint.turbineHubBoreRadius>mdJoint.gearboxInputShaftRadius);
+for(const [name,bore] of [['02_motor_input_hub',mdJoint.motorHubBoreRadius],
+ ['02_gearbox_output_hub',mdJoint.turbineHubBoreRadius]]){
+ const hub=assembly.root.getObjectByName(name);hub.updateWorldMatrix(true,false);
+ const probe=(y)=>{
+  const origin=new THREE.Vector3(-.3,y,0).applyMatrix4(hub.matrixWorld);
+  const dir=new THREE.Vector3(1,0,0).transformDirection(hub.matrixWorld);
+  return new THREE.Raycaster(origin,dir,0,.6).intersectObject(hub,false).length;
+ };
+ assert.equal(probe(0),0,`${name}: hub is solid across the shaft bore`);
+ assert.equal(probe(bore+.002),0,`${name}: key relief is obstructed`);
+ assert.ok(probe(-bore-.004)>0,`${name}: missing annular hub wall`);
+}
+
+
+assert.ok(inputHub.intersectsBox(partBox('01_motor_output_shaft')),'motor shaft is disconnected from pump hub');
+assert.ok(outputHub.intersectsBox(partBox('03_gearbox_input_shaft')),'turbine hub is disconnected from gearbox shaft');
+for(const [key,hub,drive] of [
+ ['01_motor_key_visual_study','02_motor_input_hub',assembly.spin.motor],
+ ['03_gearbox_input_key_visual_study','02_gearbox_output_hub',assembly.spin.gbIn]
+]){
+ assert.ok(partBox(key).intersectsBox(partBox(hub)),`${key}: key misses its hub`);
+ assert.ok(assembly.root.getObjectByName(key).parent===drive,`${key}: key is not shaft-driven`);
+ const g=assembly.root.getObjectByName(hub).geometry,p=g.getAttribute('position');
+ // The relieved notch is on the +Y side; its radial reach must clear the key.
+ assert.ok([...Array(p.count).keys()].some(i=>p.getY(i)>.047&&Math.abs(p.getZ(i))<.009),
+  `${hub}: no visible keyway relief`);
+}
+
+const pumpPlate=assembly.root.getObjectByName('02_pump_side_plate');
+const turbinePlate=assembly.root.getObjectByName('02_turbine_side_plate');
+assert.ok(!new THREE.Box3().setFromObject(pumpPlate).intersectsBox(new THREE.Box3().setFromObject(turbinePlate)),
+ 'opposing coupling plates physically collide');
+for(const part of ['02_turbine_wheel_annular_web','02_turbine_side_plate','02_gearbox_output_hub']){
+ const mesh=assembly.root.getObjectByName(part),pos=mesh.geometry.getAttribute('position');
+ let minimum=Infinity;
+ for(let i=0;i<pos.count;i++)minimum=Math.min(minimum,Math.hypot(pos.getY(i),pos.getZ(i)));
+ assert.ok(minimum>=.0409,`${part} blocks the 40 mm-radius gearbox shaft`);
+}
+assert.ok(pumpPlate.parent===assembly.spin.coupling&&turbinePlate.parent===assembly.spin.couplingTurbine,
+ 'fluid gap was accidentally bridged by a rigid parent');
+assert.ok(Math.abs(assembly.spin.coupling.rotation.x-assembly.spin.couplingTurbine.rotation.x)>.4,
+ 'pump and turbine must rotate independently at startup');
+
 
 for(const bearing of assembly.audit().bearings.filter(b=>b.part==='drum')){
  assert.ok(Math.abs(bearing.bore-.09)<1e-9);
@@ -106,6 +170,15 @@ for(const pose of [
  const a=assembly.audit();
  assert.ok(Number.isFinite(a.clutch.rampGap));
  assert.ok(a.loads.every(load=>load.position.every(Number.isFinite)));
+ assert.equal(assembly.spin.gbOut.rotation.x,assembly.spin.freewheel.rotation.x,
+  'backstop and gearbox output must share a shaft angle');
+ assert.equal(assembly.spin.gbOut.rotation.x,assembly.spin.pulley.rotation.x,
+  'driver pulley must follow gearbox output, including runback');
+ assert.ok(Math.abs(assembly.spin.drum.rotation.x+pose.drumAngle)<1e-10,
+  'head drum must follow the driven belt ratio');
+ assert.equal(assembly.spin.couplingTurbine.rotation.x,assembly.spin.gbIn.rotation.x,
+  'gearbox input must follow turbine in every pose');
+
  for(const p of assembly.parts){assembly.nodes[p.id].updateWorldMatrix(true,true);assert.ok(assembly.nodes[p.id].matrixWorld.elements.every(Number.isFinite));}
 }
 // The retained fault is on the original carrying idler, not an invented upper conveyor.

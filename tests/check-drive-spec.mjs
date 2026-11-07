@@ -12,12 +12,15 @@ near(m.beltCenterRadius,m.headShellRadius+m.headLaggingThickness+m.beltThickness
 near(m.beltCenterRadius,m.tailLaggedRadius+m.beltThickness/2,1e-12);
 near(p.drumRpm,p.beltSpeed/(Math.PI*p.drumDiameter)*60,1e-12);
 near(p.totalRatio,p.motorRpm/p.drumRpm,1e-12);
+near(p.unresolvedRatioFactor,p.totalRatio/m.totalRatio,1e-12);
+near(p.idealMotorTorqueNm,p.motorPowerKw*1000/(2*Math.PI*p.motorRpm/60),1e-9);
+assert.ok(p.unresolvedRatioFactor>8&&p.unresolvedRatioFactor<8.3);
 near(p.idealDrumTorqueKNm,p.motorPowerKw/(2*Math.PI*p.drumRpm/60),1e-12);
 near(p.idealBeltPullKN,p.motorPowerKw/p.beltSpeed,1e-12);
 near(p.rollbackMm,p.drumDiameter/2*p.backstopTakeupDegrees*Math.PI/180*1000,1e-12);
 assert.ok(m.totalRatio>4&&m.totalRatio<4.1);
 assert.ok(p.totalRatio>32&&p.totalRatio<33);
 assert.notEqual(m.totalRatio,p.totalRatio,'model and plant must not be presented as the same design');
-for(const id of ['modelGearRatio','modelBeltRatio','modelTotalRatio','plantCapacity','plantSpeed','plantDrum','plantRatio','plantTorque','plantRollback'])
+for(const id of ['modelGearRatio','modelBeltRatio','modelTotalRatio','plantCapacity','plantSpeed','plantDrum','plantRatio','plantTorque','plantRollback','unresolvedFactor','unresolvedNote'])
  assert.ok(html.includes(`id="${id}"`),`missing derived metric ${id}`);
 console.log(`Model ratio ${m.totalRatio.toFixed(3)}:1; plant ideal ratio ${p.totalRatio.toFixed(2)}:1 and drum ${p.drumRpm.toFixed(2)} rpm validated.`);
