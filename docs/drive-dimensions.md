@@ -17,10 +17,12 @@
 | Reference belt speed / capacity / width | Not rated | 1.9 m/s / 450 t/h / 1000 mm |
 | Drum rpm at stated belt speed | Not rated | 1.9/(π × 0.8) × 60 ≈ 45.36 rpm |
 | **Required ideal overall reduction** | **Not depicted** | **1487 / 45.36 ≈ 32.78 : 1** |
+| **Unresolved factor (arithmetic only)** | **Not a physical component** | **32.78 / 4.008 ≈ 8.18×; location/stages unknown** |
+| Ideal motor torque at nameplate speed | Not a coupling rating | 200,000 / (1487 × 2π/60) ≈ 1,284 N·m |
 | Ideal drum torque / tangential belt pull | Not rated | ≈ 42.1 kN·m / 105.3 kN |
 | Surface travel for 2° drum rotation | Not a stopping-distance prediction | ≈ 14.0 mm |
 
-The **32.78 : 1 reference ratio is not achieved by the 4.008 : 1 depicted drive**. The gap is about 8.18×; no additional reduction stage is drawn or asserted. Do not equate the illustrative animation speed with plant speed. Reference rpm assumes no belt slip and the stated 800 mm contact diameter. Ideal torque and pull assume 100% efficient transfer and ignore duty factors, losses, friction, drive sizing, load distribution and braking dynamics; the 2° travel is only an arc-length conversion, not measured runback.
+The **32.78 : 1 reference ratio is not achieved by the 4.008 : 1 depicted drive**. The gap is about 8.18×, computed directly by `plant.unresolvedRatioFactor`. The viewer displays it explicitly as an **unresolved arithmetic budget**, never as a drawn, rated or installed stage. An actual gearbox ratio cannot be inferred without the real belt-pulley ratio and measured operating slip. No additional reduction stage is drawn or asserted. Do not equate the illustrative animation speed with plant speed. Reference rpm assumes no belt slip and the stated 800 mm contact diameter. Ideal torque and pull assume 100% efficient transfer and ignore duty factors, losses, friction, drive sizing, load distribution and braking dynamics; the 2° travel is only an arc-length conversion, not measured runback.
 
 The `model` radii and teeth drive the bevel and V-belt motions, belt/drum contact path and key procedural meshes. `plant` drives the plant card, duty readouts and motor reference plate. Other stylized housing, fastener, guard, chute, idler and roller dimensions are **not** parametric. Changing the table alone does not regenerate a manufacturable assembly. Automated arithmetic and contact checks are in `tests/check-drive-spec.mjs`, with scene and mechanics checks in the other tests.
 
