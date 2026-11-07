@@ -75,3 +75,30 @@ not proof of real equipment identity or photo accuracy. Browser/SwiftShader
 QA exercised desktop and mobile Ultra→Balanced, as well as quality switching
 from inside inspection; scene and dual-Three tests cover the texture and mesh
 lifecycle. No physical GPU benchmark was available.
+
+## Further skill search and Ultra performance pass (2026-11-07)
+
+Searched GitHub again for a browser-3D quality/performance skill and selected
+MIT-licensed [`maxliebscher/optimize-three@6d7557c`](https://github.com/maxliebscher/optimize-three/tree/6d7557cf7ec1d4ce988984f863ae22db10436934)
+for its explicit WebGL quality-budget, frame-pacing, shadow and measurement
+procedures. The pinned skill, kit, scripts and references are installed under
+`.agent-skills/optimize-three/` with its license; its kit has **not** been
+injected into the r128 viewer. Its static audit identified missing frame
+pacing and warned about light toggles (also from bundled/minified Three.js and
+existing cast-shadow changes); such heuristic warnings are not GPU benchmarks.
+
+Ultra now retains the full studio look while reducing only drawing-buffer
+resolution during motion (≈1.2 MP target, bounded by device/window) and
+restoring the full ≈5 MP budget after settling. PNG capture uses the full
+still budget even if animation is running; its original drawing-buffer size
+and clear color are restored afterward. A 60 Hz visual-update cap avoids
+needless high-refresh rendering without changing simulation time. The studio
+bounce remains present with intensity 0 when off, avoiding a light-count
+shader recompile. The static GLB exporter excludes Ultra-only decorative rims
+so its engineering snapshot does not depend on the last quality selected.
+
+Playwright/Chromium **SwiftShader** checks exercised desktop and mobile
+moving → paused → resumed resolution transitions and a full-resolution PNG;
+no page errors were observed. SwiftShader is software rendering: its timings
+cannot substantiate an FPS or GPU-efficiency claim for actual iGPUs/phones.
+No new as-built evidence was obtained.

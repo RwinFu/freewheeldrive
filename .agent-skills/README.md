@@ -44,3 +44,15 @@ Skills are **instructions**, not installed renderers or new inherent assistant
 capabilities. In particular, the viewer stays on embedded Three.js r128; each
 example/API must be checked for r128 support before implementation. The Ultra
 changes are documented in the [toolchain audit](../docs/toolchain-audit.md).
+
+## Pinned performance skill for the Ultra follow-up
+
+[`optimize-three`](optimize-three/SKILL.md) from
+[`maxliebscher/optimize-three@6d7557c`](https://github.com/maxliebscher/optimize-three/tree/6d7557cf7ec1d4ce988984f863ae22db10436934)
+(MIT; [license](optimize-three/LICENSE)) was added with its complete skill
+kit, scripts and references and locally linked at `~/.claude/skills/optimize-three`.
+The kit is available for study; it is **not automatically imported by the
+viewer**. Its sample backend and APIs require a compatibility review before
+use with this embedded Three.js r128 page. We used its scene-cost, GPU
+measurement and still-versus-motion DPR guidance. Agent skills are local
+instructions/tools, not new inherent assistant abilities or a GPU upgrade.
