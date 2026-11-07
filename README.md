@@ -39,6 +39,11 @@ pixels), up to 3072² shadow resolution subject to GPU limits, finer seeded
 cast/machined microfinish maps, small actual bevel-highlight meshes on existing
 motor/coupling rims, a separately prefiltered studio reflection environment, directional machined
 metal relief, and a warmer floor bounce with restrained cool fill.
+While the model moves, Ultra temporarily draws fewer pixels (approximately a
+1.2-megapixel budget) and restores full still detail after settling; a PNG
+export always uses the full still budget. Frame pacing avoids unnecessary
+high-refresh rendering. The viewer's static GLB export excludes Ultra-only
+visual rim accents. These are renderer-cost choices, not new mechanical parts.
 Changes are reversible on switching modes; the default remains Balanced.
 These decisions follow the supplied Code Cinema ZIP and pinned MIT GitHub
 [Three.js/Web 3D skill references](.agent-skills/README.md); the installed

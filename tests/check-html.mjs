@@ -22,4 +22,10 @@ assert.equal((html.match(/ucpUnit\(n,s,'drum',[\d.\-]+,\.045,/g) || []).length, 
 assert.match(html, /Model Ø484 mm · plant ref\. Ø800 mm/);
 assert.doesNotMatch(parts, /id:'feeder'/);
 assert.doesNotMatch(html, /13_upper_infeed_transfer_deck/);
+// Ultra changes sampling cost while moving, but screenshots remain full-resolution.
+assert.match(html,/function ultraMotionPixelRatio\(\).*1200000/);
+assert.match(html,/if\(upscale\)\{renderer\.setPixelRatio\(ultraPixelRatio\(\)\)/);
+assert.match(html,/if\(upscale\)\{renderer\.setPixelRatio\(ultraMotionPixelRatio\(\)\)/);
+assert.match(html,/o\.name\.startsWith\('Ultra_'\)/);
+
 console.log(`Validated ${scripts.length} scripts and ${count} assembly parts.`);

@@ -59,6 +59,8 @@ const inspectionEnv=new THREE.Texture();ultraScene.environment=inspectionEnv;
 ultra.apply(true,true);assert.equal(ultraScene.environment,inspectionEnv);
 ultra.syncEnvironment(false);assert.notEqual(ultraScene.environment,inspectionEnv);
 ultra.apply(false);assert.equal(ultraScene.environment,null);
+assert.equal(ultraScene.children.find(o=>o.isPointLight).visible,true,'bounce light stays compiled when intensity is zero');
+assert.equal(ultraScene.children.find(o=>o.isPointLight).intensity,0);
 assert.equal(assembly.parts.length,12);
 if(THREE.SRGBColorSpace)assert.equal(assembly.textures.wood.colorSpace,THREE.SRGBColorSpace,'color texture must carry sRGB metadata on modern Three');
 assert.equal(new Set(assembly.parts.map(p=>p.id)).size,12);

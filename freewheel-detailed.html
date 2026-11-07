@@ -4657,8 +4657,8 @@ return{root,nodes,spin,parts,instrumentation,guards,setSwayVisual,materials:allM
 // The film kit's r160 runtime, temporal sampler and grading are NOT imported here.
 function createUltraFinish(T,A,renderer,scene,key,fill){
  let detail=null,maps=null,studio=null;const baseEnvironment=scene.environment,original=new Map();
- const bounce=new T.PointLight(0xffca91,.30,3,2);
- bounce.position.set(-.6,.26,1.05);bounce.visible=false;scene.add(bounce);
+ const bounce=new T.PointLight(0xffca91,0,3,2);
+ bounce.position.set(-.6,.26,1.05);scene.add(bounce);
  function texture(kind){
   const c=document.createElement('canvas');c.width=c.height=512;
   const g=c.getContext('2d'),im=g.createImageData(512,512),a=im.data;
@@ -4720,11 +4720,11 @@ function createUltraFinish(T,A,renderer,scene,key,fill){
   detail.visible=false;motor.visible=false;chamber.visible=false;
  }
  function syncEnvironment(inspection){if(!inspection)scene.environment=activeStudio()?studio.texture:baseEnvironment;}
- function activeStudio(){return bounce.visible&&!!studio;}
+ function activeStudio(){return bounce.intensity>0&&!!studio;}
  function apply(active,inspection){
   if(active&&!maps)build();
   if(detail){detail.visible=active;for(const group of detail.userData.groups)group.visible=active;}
-  bounce.visible=active;syncEnvironment(inspection);
+  bounce.intensity=active?.30:0;syncEnvironment(inspection);
   for(const mat of A.materials){
    if(!mat.userData.finishKey)continue;
    if(active){
@@ -4742,7 +4742,7 @@ function createUltraFinish(T,A,renderer,scene,key,fill){
   fill.intensity=active?.34:.46;
   renderer.shadowMap.needsUpdate=true;
  }
- return{apply,syncEnvironment,get active(){return bounce.visible;},get detail(){return detail;}};
+ return{apply,syncEnvironment,get active(){return bounce.intensity>0;},get detail(){return detail;}};
 }
 const A=createAssembly(T,renderer,scene),PARTS=A.parts,PMAP=Object.fromEntries(PARTS.map(p=>[p.id,p]));
 const ultraFinish=createUltraFinish(T,A,renderer,scene,key,fill);
@@ -4956,17 +4956,19 @@ function viewPreset(v){return v==='hero'?{az:-1.05,el:.24,fov:30}:v==='front'?{a
 for(const b of document.querySelectorAll('[data-view]'))b.addEventListener('click',()=>{S.auto=false;setPressed('bAuto',false);const v=b.dataset.view,p=viewPreset(v);cam.taz=p.az;cam.tel=p.el;camera.fov=p.fov;camera.updateProjectionMatrix();fitView();document.querySelectorAll('[data-view]').forEach(x=>x.classList.toggle('on',x===b));$('viewMode').textContent=(v==='hero'?t('vHero'):v==='iso'?t('viewPerspective'):(v==='front'?t('vFront'):t('vTop')))+' · '+t('viewPerspective');});
 window.addEventListener('keydown',e=>{if(e.ctrlKey||e.altKey||e.metaKey||e.repeat)return;if($('help').open||$('maker').open||$('instPanel').open)return;if(e.target.closest('input,select,textarea,[contenteditable="true"]'))return;if(e.code==='Space'&&e.target.closest('button'))return;const key=e.key.toLowerCase();if(e.code==='Space'){e.preventDefault();S.play=!S.play;refreshUI();}else if(key==='escape'){setPartsOpen(false);selectPart(null);}else if(key==='r')resetAll();else if(key==='h')fitView();else if(key==='i')toggleInside();else if(key==='l'){S.labels=!S.labels;refreshUI();}else if(key==='g'){$('bGuard').click();}else if(key==='x')setExplode(expTarget>.5?0:1);else if(['1','2','3'].includes(key))setRender({1:'solid',2:'xray',3:'wire'}[key]);else if(key==='?')$('help').showModal();});
 /* Camera framing uses actual corner projections, not hard-coded browser dimensions. */
-let viewW=1,viewH=1;
+let viewW=1,viewH=1,ultraMoving=false,ultraSettledAt=0;
 function compactCard(){return innerWidth<=760&&innerHeight>560;}
 function setProjection(){if(!viewW||!viewH)return;let ox=0,oy=0;if(S.inside){const r=inspectionRect();ox=viewW/2-(r.x+r.w/2);oy=viewH/2-(r.y+r.h/2);}else{ox=S.sel&&!compactCard()?Math.min(145,viewW*.19):0;oy=S.sel&&compactCard()?viewH*.20:0;}camera.aspect=viewW/viewH;camera.near=S.inside?.002:.025;camera.setViewOffset(viewW,viewH,ox,oy,viewW,viewH);camera.updateProjectionMatrix();dirty=true;}
-function resize(){const r=stage.getBoundingClientRect();viewW=Math.max(1,r.width-2);viewH=Math.max(1,r.height-2);if(S.quality==='ultra')renderer.setPixelRatio(ultraPixelRatio());renderer.setSize(viewW,viewH,false);setProjection();if(!S.userZoom)updateCameraTargets();if(typeof gravityFoldTouched!=='undefined'&&!gravityFoldTouched)setGravityFold(innerWidth<=760);dirty=true;}
+function resize(){const r=stage.getBoundingClientRect();viewW=Math.max(1,r.width-2);viewH=Math.max(1,r.height-2);if(S.quality==='ultra')renderer.setPixelRatio(ultraMoving?ultraMotionPixelRatio():ultraPixelRatio());renderer.setSize(viewW,viewH,false);setProjection();if(!S.userZoom)updateCameraTargets();if(typeof gravityFoldTouched!=='undefined'&&!gravityFoldTouched)setGravityFold(innerWidth<=760);dirty=true;}
 const resizeObserver=new ResizeObserver(resize);resizeObserver.observe(stage);
 // Limit the render target to ~5 megapixels, even on very high-DPR displays.
 function ultraPixelRatio(){return Math.min(Math.max(1.75,devicePixelRatio||1),2.5,Math.sqrt(5000000/Math.max(1,viewW*viewH)));}
+// Lower sampling only while the image changes; restore a crisp full-resolution still.
+function ultraMotionPixelRatio(){return Math.min(ultraPixelRatio(),Math.max(1,ultraPixelRatio()*.72),Math.sqrt(1200000/Math.max(1,viewW*viewH)));}
 function setQuality(value){
  if(!['low','balanced','high','ultra'].includes(value))value='balanced';
- S.quality=value;
- renderer.setPixelRatio(value==='ultra'?ultraPixelRatio():Math.min(devicePixelRatio||1,value==='high'?2:value==='low'?.75:1.5));
+ S.quality=value;ultraMoving=value==='ultra'&&S.play&&!S.inside;ultraSettledAt=performance.now();
+ renderer.setPixelRatio(value==='ultra'?(ultraMoving?ultraMotionPixelRatio():ultraPixelRatio()):Math.min(devicePixelRatio||1,value==='high'?2:value==='low'?.75:1.5));
  renderer.shadowMap.enabled=value!=='low';
  const shadowSize=value==='ultra'?Math.min(3072,renderer.capabilities.maxTextureSize||2048):value==='high'?2048:1024;
  if(key.shadow.mapSize.x!==shadowSize){key.shadow.mapSize.set(shadowSize,shadowSize);if(key.shadow.map){key.shadow.map.dispose();key.shadow.map=null;}}
@@ -5040,7 +5042,7 @@ async function makeGLB(){
  try{
  function packedRoughness(source){if(packedCache.has(source))return packedCache.get(source);const image=source.image,canvas=document.createElement('canvas');canvas.width=image.width;canvas.height=image.height;const g=canvas.getContext('2d');g.drawImage(image,0,0);const pixels=g.getImageData(0,0,canvas.width,canvas.height);for(let i=0;i<pixels.data.length;i+=4){pixels.data[i]=255;pixels.data[i+2]=255;pixels.data[i+3]=255;}g.putImageData(pixels,0,0);const texture=source.clone();texture.image=canvas;texture.encoding=T.LinearEncoding;texture.needsUpdate=true;packedCache.set(source,texture);return texture;}
  function cleanMaterial(m){if(materialCache.has(m))return materialCache.get(m);const c=m.clone(),b=m.userData.base;c.userData={};if(b){c.color.copy(b.color);c.metalness=b.metalness;c.roughness=b.roughness;c.opacity=b.opacity;c.transparent=b.transparent;c.depthWrite=b.depthWrite;c.side=b.side;c.envMapIntensity=b.envMapIntensity;}c.emissive.setHex(0);c.emissiveIntensity=0;c.clippingPlanes=null;if(c.roughnessMap&&!c.metalnessMap){const packed=packedRoughness(c.roughnessMap);c.metalnessMap=c.roughnessMap=packed;}materialCache.set(m,c);return c;}
- function clean(o){if(o.isLineSegments||(S.noBackstop&&o===A.nodes.freewheel))return null;const c=o.isMesh?new T.Mesh(o.geometry,cleanMaterial(inspector.baseMaterial(o))):new T.Group();c.name=o.name||(o.isMesh?inspector.baseMaterial(o).name:o.material?.name)||'component';c.position.copy(o.position);c.quaternion.copy(o.quaternion);c.scale.copy(o.scale);c.userData=o===A.root?{units:'meters',revision:'06',duty:'clinker',scope:'Illustrative static mesh. Not for manufacture.'}:o.userData.part?{part:o.userData.part}:{};for(const child of o.children){const cc=clean(child);if(cc)c.add(cc);}return c;}
+ function clean(o){if(o.isLineSegments||o.name.startsWith('Ultra_')||(S.noBackstop&&o===A.nodes.freewheel))return null;const c=o.isMesh?new T.Mesh(o.geometry,cleanMaterial(inspector.baseMaterial(o))):new T.Group();c.name=o.name||(o.isMesh?inspector.baseMaterial(o).name:o.material?.name)||'component';c.position.copy(o.position);c.quaternion.copy(o.quaternion);c.scale.copy(o.scale);c.userData=o===A.root?{units:'meters',revision:'06',duty:'clinker',scope:'Illustrative static mesh. Not for manufacture.'}:o.userData.part?{part:o.userData.part}:{};for(const child of o.children){const cc=clean(child);if(cc)c.add(cc);}return c;}
  const exportRoot=clean(A.root);exportRoot.updateMatrixWorld(true);
  const result=await new Promise((resolve,reject)=>{const timeout=setTimeout(()=>reject(new Error('GLB export timed out. Try the Low / fast quality setting and export again.')),90000);try{new T.GLTFExporter().parse(exportRoot,data=>{clearTimeout(timeout);resolve(data);},{binary:true,onlyVisible:true,embedImages:true,maxTextureSize:512,trs:true});}catch(e){clearTimeout(timeout);reject(e);}});
  return new Blob([result],{type:'model/gltf-binary'});
@@ -5048,7 +5050,31 @@ async function makeGLB(){
 }
 function download(blob,name){const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),30000);}
 $('bGLB').addEventListener('click',async()=>{const b=$('bGLB');b.disabled=true;toast(t('tGlbPrep'));try{download(await makeGLB(),'freewheel-drive.glb');toast(t('tGlbReady'));}catch(e){toast(t('tGlbFail')+e.message,true);}finally{b.disabled=false;}});
-$('bPNG').addEventListener('click',()=>{const pngBtn=$('bPNG');if(pngBtn.disabled)return;pngBtn.disabled=true;try{const gl=renderer.getContext(),w=renderer.domElement.width,h=renderer.domElement.height;const color=renderer.getClearColor(new T.Color()),alpha=renderer.getClearAlpha();renderer.setClearColor(S.inside?0x20364a:0x26372e,1);renderer.render(scene,camera);const pixels=new Uint8Array(w*h*4);gl.readPixels(0,0,w,h,gl.RGBA,gl.UNSIGNED_BYTE,pixels);renderer.setClearColor(color,alpha);dirty=true;const out=document.createElement('canvas');out.width=w;out.height=h;const g2=out.getContext('2d');const img=g2.createImageData(w,h);img.data.set(pixels);const tmp=document.createElement('canvas');tmp.width=w;tmp.height=h;tmp.getContext('2d').putImageData(img,0,0);g2.translate(0,h);g2.scale(1,-1);g2.drawImage(tmp,0,0);g2.setTransform(1,0,0,1,0,0);out.toBlob(blob=>{pngBtn.disabled=false;if(blob){download(blob,'freewheel-view.png');toast(t('tPngOk'));}else toast(t('tPngFail'),true);},'image/png');}catch(e){pngBtn.disabled=false;toast(t('tPngErr')+e.message,true);}});
+$('bPNG').addEventListener('click',()=>{
+ const pngBtn=$('bPNG');if(pngBtn.disabled)return;pngBtn.disabled=true;
+ // Capture at the full still budget, even when Ultra is temporarily using
+ // fewer pixels for motion. HTML annotations are deliberately not in the PNG.
+ const upscale=S.quality==='ultra'&&ultraMoving;
+ const clear=renderer.getClearColor(new T.Color()),alpha=renderer.getClearAlpha();
+ try{
+  if(upscale){renderer.setPixelRatio(ultraPixelRatio());renderer.setSize(viewW,viewH,false);}
+  const gl=renderer.getContext(),w=renderer.domElement.width,h=renderer.domElement.height;
+  renderer.setClearColor(S.inside?0x20364a:0x26372e,1);
+  renderer.render(scene,camera);
+  const pixels=new Uint8Array(w*h*4);gl.readPixels(0,0,w,h,gl.RGBA,gl.UNSIGNED_BYTE,pixels);
+  const out=document.createElement('canvas');out.width=w;out.height=h;
+  const g2=out.getContext('2d'),img=g2.createImageData(w,h);img.data.set(pixels);
+  const tmp=document.createElement('canvas');tmp.width=w;tmp.height=h;
+  tmp.getContext('2d').putImageData(img,0,0);
+  g2.translate(0,h);g2.scale(1,-1);g2.drawImage(tmp,0,0);g2.setTransform(1,0,0,1,0,0);
+  out.toBlob(blob=>{pngBtn.disabled=false;if(blob){download(blob,'freewheel-view.png');toast(t('tPngOk'));}else toast(t('tPngFail'),true);},'image/png');
+ }catch(e){pngBtn.disabled=false;toast(t('tPngErr')+e.message,true);}
+ finally{
+  renderer.setClearColor(clear,alpha);
+  if(upscale){renderer.setPixelRatio(ultraMotionPixelRatio());renderer.setSize(viewW,viewH,false);}
+  renderer.shadowMap.needsUpdate=true;dirty=true;
+ }
+});
 function snapshot(){const m=mechanics.snapshot();A.root.updateMatrixWorld(true);const axis=o=>new T.Vector3(1,0,0).transformDirection(o.matrixWorld).toArray();const dp=A.drivePath.pts,first=dp[0],next=dp[1],seam=dp[dp.length-1];return{duty:'clinker',inspection:inspector.audit(),serviceStudies:Object.entries(SERVICE_STUDIES).flatMap(([part,items])=>items.map(([en,fa,node])=>({part,name:en,node,present:!!A.root.getObjectByName(node),evidence:'catalog/concept study; installation unverified'}))),inspectionProjection:S.inside?inspector.project(camera,viewW,viewH):null,inspectionViewport:S.inside?inspectionRect():null,engineering:A.audit(),alignment:{motorAxis:axis(A.spin.motor),gearboxOutputAxis:axis(A.spin.gbOut),driverAxis:axis(A.spin.pulley),headAxis:axis(A.spin.drum),tailAxis:axis(A.spin.tail),upperTangentNormalDot:(next.x-first.x)*first.nx+(next.y-first.y)*first.ny,beltSeamError:Math.hypot(first.x-seam.x,first.y-seam.y)},version:'4.2.0-cement',driveSpec:{model:modelSpec,plant:plantSpec},finishes:A.materials.map(m=>({name:m.name,part:m.userData.part,housing:!!m.userData.housing,interior:!!m.userData.interiorFinish,key:m.userData.finishKey||'',roughness:m.roughness,metalness:m.metalness,envMapIntensity:m.envMapIntensity,opacity:m.opacity,baseRoughness:m.userData.base.roughness})),ready:document.body.dataset.ready,state:{...S},explode:{target:expTarget,current:expCur},motion:m,constants:{...A.constants,gearRatio:modelSpec.gearRatio,rollbackLimit:mechanics.config.rollbackLimit},camera:{az:cam.az,el:cam.el,r:cam.r,x:cam.x,y:cam.y,z:cam.z,targetR:cam.tr,targetAz:cam.taz,targetEl:cam.tel},viewport:{width:viewW,height:viewH},parts:PARTS.map(p=>({id:p.id,node:A.nodes[p.id].name,position:A.nodes[p.id].position.toArray(),visible:A.nodes[p.id].visible})),geometry:{meshes:A.meshes.length,geometries:renderer.info.memory.geometries,textures:renderer.info.memory.textures,drawCalls:renderer.info.render.calls,triangles:renderer.info.render.triangles,driveLoopLength:A.drivePath.length,conveyorLoopLength:A.conveyorPath.length},labels:PARTS.filter(p=>!p.labelEl.hidden&&S.labels).map(p=>p.id)};}
 /* Kinematic audit: measured world orientation of every rotating node, so rotation direction,
    gear and belt ratios and rolling contacts can be verified from the rendered scene itself. */
@@ -5077,7 +5103,11 @@ function kinematics(){
 window.FreewheelStudio=Object.freeze({version:'4.2.0-cement',inspect:snapshot,kinematics,exportGLB:makeGLB,reset:resetAll,root:()=>A.root,scene:()=>scene,camera:()=>camera,state:()=>S,select:id=>selectPart(id),view:(a,e,r,x,y,z)=>{if(Number.isFinite(a)){cam.taz=a;}if(Number.isFinite(e)){cam.tel=e;}if(Number.isFinite(r)){cam.tr=r;}if(Number.isFinite(x)){cam.tx=x;cam.x=x;}if(Number.isFinite(y)){cam.ty=y;cam.y=y;}if(Number.isFinite(z)){cam.tz=z;cam.z=z;}S.userZoom=true;S.userPan=true;dirty=true;}});
 let last=performance.now(),monitorTime=0,shadowTime=0,lastPhase='drive',first=true;
 function frame(now){
- raf=requestAnimationFrame(frame);if(contextLost||document.hidden){last=now;return;}const dt=clamp((now-last)/1000,0,.20);last=now;
+ raf=requestAnimationFrame(frame);if(contextLost||document.hidden){last=now;return;}
+ // Pace at most ~60 visual updates/s on high-refresh displays; simulation dt
+ // accumulates until the next rendered update instead of slowing the drive.
+ if(!dirty&&now-last<15)return;
+ const dt=clamp((now-last)/1000,0,.20);last=now;
  const difference=expTarget-expCur;if(Math.abs(difference)>.00005){expCur+=difference*(1-Math.exp(-dt*6));if(Math.abs(expTarget-expCur)<.00005)expCur=expTarget;applyExplode();dirty=true;}
  mechanics.advance(dt,S.play&&!S.demoTrip,S.speed);const motion=mechanics.snapshot();const moving=S.play&&!S.demoTrip&&S.speed>0&&motion.phase!=='locked';if(moving||dirty||lastPhase!==motion.phase)A.animate({...motion,idlerJam:S.idlerJam});
  if(lastPhase!==motion.phase){if(motion.phase==='locked')toast(t('tLocked'));lastPhase=motion.phase;dirty=true;}
@@ -5085,6 +5115,14 @@ function frame(now){
  if(S.auto&&!pointers.size){cam.taz+=dt*.12;dirty=true;}
  updateCameraTargets();const k=1-Math.exp(-dt*8);let cameraMoving=false;for(const [from,to] of [['az','taz'],['el','tel'],['r','tr'],['x','tx'],['y','ty'],['z','tz']]){const d=cam[to]-cam[from];if(Math.abs(d)>1e-5){cam[from]+=d*k;cameraMoving=true;}else cam[from]=cam[to];}
  const ce=Math.cos(cam.el);camera.position.set(cam.x+cam.r*ce*Math.sin(cam.az),cam.y+cam.r*Math.sin(cam.el),cam.z+cam.r*ce*Math.cos(cam.az));camera.up.copy(S.inside?inspector.up():new T.Vector3(0,1,0));camera.lookAt(cam.x,cam.y,cam.z);camera.updateMatrixWorld();
+ // One downgrade per motion start, one upgrade after the view has settled.
+ // No GPU/fps claim: this is a deterministic pixel budget, not a benchmark.
+ if(S.quality==='ultra'){
+  const changing=moving||cameraMoving||S.auto||Math.abs(expTarget-expCur)>.00005;
+  if(changing)ultraSettledAt=now;
+  const reduced=changing||now-ultraSettledAt<300;
+  if(reduced!==ultraMoving){ultraMoving=reduced;renderer.setPixelRatio(reduced?ultraMotionPixelRatio():ultraPixelRatio());renderer.setSize(viewW,viewH,false);dirty=true;}
+ }
  if(dirty||moving||cameraMoving){for(const m of A.materials){if(m.userData.swayLamp)continue;const part=m.userData.part;const interior=m.userData.interiorFinish;m.emissive.setHex(m===A.tagMat&&motion.lock>.5?0xe66532:interior?0xdce7ef:0xd4b77a);m.emissiveIntensity=m===A.tagMat&&motion.lock>.5?.45:part===S.sel?(interior?(S.inside?.018:.035):.14):part===S.hover?(interior?.015:.055):0;}edgeMaterials.forEach((m,id)=>{m.color.setHex(id===S.sel?0xe1c586:0x9eaf84);m.opacity=id===S.sel?.95:.65;});shadowTime+=dt;if(shadowTime>.20&&moving){renderer.shadowMap.needsUpdate=true;shadowTime=0;}updateGravityArrow();if(S.inside)inspector.update();renderer.render(scene,camera);updateLabels();dirty=false;}
  monitorTime+=dt;if(monitorTime>.12||first){updateMonitor(motion);monitorTime=0;}
  if(first){first=false;document.body.dataset.ready='true';$('loader').classList.add('hide');}
