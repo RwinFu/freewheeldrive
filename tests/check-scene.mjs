@@ -121,6 +121,31 @@ for(const [label,part] of [['sight glass',sight],['breather',vent],['drain',drai
  for(const value of [...bounds.min.toArray(),...bounds.max.toArray()])assert.ok(Number.isFinite(value));
 }
 
+const serviceStart=script.indexOf('const SERVICE_STUDIES=Object.freeze({');
+const serviceEnd=script.indexOf('const driveSpec=',serviceStart);
+assert.ok(serviceStart>0&&serviceEnd>serviceStart);
+const service=runInNewContext(script.slice(serviceStart,serviceEnd)+';SERVICE_STUDIES');
+for(const [part,entries] of Object.entries(service))for(const [en,fa,node] of entries){
+ assert.ok(assembly.parts.some(p=>p.id===part));
+ assert.ok(en&&fa&&assembly.root.getObjectByName(node),`missing bilingual service study: ${part}/${node}`);
+}
+// Service points must be distinguishable and fixed to their actual study part.
+for(const name of ['02_coupling_oil_sight_glass_catalog_study','02_fill_plug_catalog_study',
+ '02_fusible_plug_catalog_study_0','02_fusible_plug_catalog_study_1',
+ '03_gearbox_breather_catalog_study','03_gearbox_oil_drain_catalog_study']){
+ const o=assembly.root.getObjectByName(name);
+ assert.ok(o,`missing service study ${name}`);
+ assert.ok(!new THREE.Box3().setFromObject(o).isEmpty());
+}
+assert.equal(assembly.bearingUnits.length,6);
+for(const b of assembly.bearingUnits){
+ const nipple=b.station.getObjectByName(`${b.unitName}_grease_nipple_catalog_study`);
+ assert.ok(nipple&&nipple.parent===b.station,`${b.unitName}: nipple must stay with fixed housing`);
+ assert.ok(!new THREE.Box3().setFromObject(nipple).isEmpty());
+}
+const liners=assembly.root.getObjectByName('09_replaceable_impact_liners_concept');
+assert.ok(liners&&liners.children.filter(o=>o.isMesh).length===3);
+assert.ok(liners.children.every(o=>o.material.roughness>.5),'liner should read as worn matte steel, not polished shaft');
 assert.ok(!assembly.root.getObjectByName('13_upper_infeed_transfer_deck'));
 assert.ok(assembly.meshes.length>300);
 assert.equal(assembly.guards.name,'00_REMOVABLE_DRIVE_GUARDS_NOT_CERTIFIED');
