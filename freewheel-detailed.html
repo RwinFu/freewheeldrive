@@ -3610,7 +3610,7 @@ function rng(seed){return function(){seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.i
 function ctex(w,h,fn,srgb){
   const c=document.createElement('canvas');c.width=w;c.height=h;fn(c.getContext('2d'),w,h);
   const t=new T.CanvasTexture(c);t.wrapS=t.wrapT=T.RepeatWrapping;t.anisotropy=Math.min(8,maxAniso);
-  if(srgb)t.encoding=T.sRGBEncoding;return t;
+  if(srgb){if(T.SRGBColorSpace)t.colorSpace=T.SRGBColorSpace;else t.encoding=T.sRGBEncoding;}return t;
 }
 const TX={};
 /* Shallow, repeatable micro-relief: height derivatives encoded as tangent-space normals.
