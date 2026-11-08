@@ -47,6 +47,22 @@
 /* In a small viewport the inspection toolbar replaces the redundant global dock. */
 @media(max-width:760px){#stage.internal-view{bottom:8px}#stage.internal-view~#dock{display:none}.inspection-actions button{font-size:10px}}
 @media(max-width:760px) and (max-height:560px){.inspection-actions button{font-size:8px}}
+/* Ultra keeps the machine readable while giving the stage a darker cinema surround. */
+#stage.ultra-look:not(.internal-view){background:radial-gradient(ellipse at 54% 40%,#2d3939 0%,#19282b 48%,#0b171c 100%)}
+#stage.ultra-look:not(.internal-view) .stage-shade{background:radial-gradient(ellipse at 52% 43%,transparent 35%,#06101388 100%)}
+/* Explicit director's view: restore technical panels without altering their data. */
+.cinema-btn{font-size:9px;letter-spacing:.09em;font-weight:700;color:var(--gold);border-color:#d4b77a50}
+.cinema-btn i{font:normal 15px/1 Georgia,serif;color:#e8c987}
+.cinema-btn.on{background:#d4b77a24;border-color:#d4b77a;color:#f2d9a2}
+#cinemaPlate{display:none;position:absolute;z-index:6;left:20px;bottom:46px;max-width:min(340px,68%);padding:16px 22px 18px 15px;pointer-events:none;
+ background:linear-gradient(90deg,#071518d9,#07151883 77%,transparent);border-left:2px solid var(--gold);text-shadow:0 2px 13px #000}
+#cinemaPlate small{display:block;color:#e2c790;font-size:9px;letter-spacing:.22em;font-weight:650}
+#cinemaPlate strong{display:block;color:#f4f2e6;font-size:clamp(18px,2.2vw,29px);line-height:1.18;letter-spacing:.14em;margin:7px 0}
+#cinemaPlate span{display:block;color:#d0dad0;font-size:10px;line-height:1.5;letter-spacing:.02em}
+#stage.cinema-mode #cinemaPlate{display:block}
+#stage.cinema-mode #gravityPanel,#stage.cinema-mode #swayPanel,#stage.cinema-mode #labels,#stage.cinema-mode #leaderLines,#stage.cinema-mode #card{display:none!important}
+#stage.cinema-mode .stage-shade{background:radial-gradient(ellipse at 52% 42%,transparent 34%,#061013ad 100%)}
+@media(max-width:760px){.cinema-btn span{display:none}#cinemaPlate{left:13px;bottom:34px;padding:9px 12px;max-width:72%}#cinemaPlate strong{font-size:16px}#cinemaPlate small{font-size:7px}#cinemaPlate span{font-size:8px}}
 /* The optional studio tier remains readable in both languages on a narrow stage. */
 #quality{max-width:137px}
 @media(max-width:760px){#quality{max-width:94px}}
@@ -227,7 +243,8 @@ THE SOFTWARE.
   <main id="stage" aria-label="Interactive three-dimensional assembly">
     <canvas id="gl" tabindex="0" aria-label="3D drive station. Drag to orbit, Shift-drag to pan, scroll to zoom. Press question mark for help."></canvas>
     <div class="stage-shade" aria-hidden="true"></div>
-    <div class="viewport-head"><button id="bParts" class="mini-btn mobile-only" aria-expanded="false" aria-controls="sidebar"><svg><use href="#i-parts"/></svg>Parts <span>12</span></button><div class="view-label"><i></i><span id="viewName">COMPLETE ASSEMBLY</span><b id="viewMode">PERSPECTIVE</b></div><div class="viewport-tools"><button id="bLabels" class="mini-icon on" aria-label="Toggle component labels" aria-pressed="true" title="Component labels · L"><svg><use href="#i-label"/></svg></button><button id="bGuard" class="mini-icon on" type="button" aria-label="Show drive guards" aria-pressed="true" title="Toggle drive guards · G">G</button><button id="bFit" class="mini-icon" title="Fit current view · H" aria-label="Fit current view"><svg><use href="#i-home"/></svg></button><select id="quality" aria-label="Rendering quality" title="Rendering quality"><option value="balanced">Balanced</option><option value="high">High quality</option><option value="ultra">Ultra · studio</option><option value="low">Low / fast</option></select></div></div>
+    <div class="viewport-head"><button id="bParts" class="mini-btn mobile-only" aria-expanded="false" aria-controls="sidebar"><svg><use href="#i-parts"/></svg>Parts <span>12</span></button><div class="view-label"><i></i><span id="viewName">COMPLETE ASSEMBLY</span><b id="viewMode">PERSPECTIVE</b></div><div class="viewport-tools"><button id="bLabels" class="mini-icon on" aria-label="Toggle component labels" aria-pressed="true" title="Component labels · L"><svg><use href="#i-label"/></svg></button><button id="bGuard" class="mini-icon on" type="button" aria-label="Show drive guards" aria-pressed="true" title="Toggle drive guards · G">G</button><button id="bFit" class="mini-icon" title="Fit current view · H" aria-label="Fit current view"><svg><use href="#i-home"/></svg></button><button id="bCinema" class="mini-btn cinema-btn" type="button" aria-pressed="false" aria-label="Cinema focus" title="Cinema focus · C"><i aria-hidden="true">◈</i><span id="bCinemaText">STUDIO</span></button><select id="quality" aria-label="Rendering quality" title="Rendering quality"><option value="balanced">Balanced</option><option value="high">High quality</option><option value="ultra">Ultra · studio</option><option value="low">Low / fast</option></select></div></div>
+    <div id="cinemaPlate" aria-live="off"><small id="cinemaKicker">CEMENT DUTY / CONCEPT STUDY</small><strong id="cinemaTitle">CLINKER DRIVE</strong><span id="cinemaCaveat">Illustrative model · installed equipment unverified</span></div>
     <section id="swayPanel" aria-label="Simulated belt misalignment" dir="ltr">
       <div class="sway-head"><i id="swayLamp" aria-hidden="true"></i><strong id="swayTitle">BELT ALIGNMENT · SIMULATION</strong></div>
       <p id="swayReadout" role="status" aria-live="polite">Belt centered · 0 mm</p>
@@ -2904,6 +2921,7 @@ const api=Object.freeze({create});if(typeof module!=='undefined'&&module.exports
   k('qBalanced', 'Balanced', 'متعادل');
   k('qHigh', 'High quality', 'کیفیت بالا');
   k('qUltra', 'Ultra · studio', 'اولترا · استودیویی');
+  k('cinemaAria', 'Cinema focus · C', 'نمای سینمایی · C');
   k('qLow', 'Low / fast', 'کم / سریع');
   k('labelsAriaBox', 'Component annotations', 'برچسب‌های قطعات');
   k('cardAria', 'Selected component', 'قطعهٔ انتخاب‌شده');
@@ -3615,7 +3633,7 @@ renderer.outputEncoding=T.sRGBEncoding;renderer.toneMapping=T.ACESFilmicToneMapp
 const scene=new T.Scene(),camera=new T.PerspectiveCamera(37,1,.025,150);scene.fog=new T.FogExp2(0x20302a,.025);
 /* A procedural studio environment: no HDRI, texture, font or network dependency. */
 const envCanvas=document.createElement('canvas');envCanvas.width=512;envCanvas.height=256;const ec=envCanvas.getContext('2d'),gradient=ec.createLinearGradient(0,0,0,256);gradient.addColorStop(0,'#91a2a0');gradient.addColorStop(.40,'#a9b6a5');gradient.addColorStop(.51,'#4a5948');gradient.addColorStop(1,'#15201a');ec.fillStyle=gradient;ec.fillRect(0,0,512,256);ec.fillStyle='#d1dfce';ec.fillRect(75,38,43,92);ec.fillStyle='#d3e2e6';ec.fillRect(352,49,34,96);ec.fillStyle='#e1dcc7';ec.fillRect(195,15,112,14);ec.fillStyle='#eff5fa';ec.fillRect(330,36,18,123);const metalPanel=ec.createLinearGradient(0,98,0,199);metalPanel.addColorStop(0,'#758493');metalPanel.addColorStop(.24,'#e1e9f1');metalPanel.addColorStop(.45,'#c3d0dc');metalPanel.addColorStop(.68,'#8798a8');metalPanel.addColorStop(1,'#3c4e5b');ec.fillStyle=metalPanel;ec.fillRect(376,98,62,101);const et=new T.CanvasTexture(envCanvas);et.mapping=T.EquirectangularReflectionMapping;et.encoding=T.sRGBEncoding;const pmrem=new T.PMREMGenerator(renderer),environment=pmrem.fromEquirectangular(et);scene.environment=environment.texture;et.dispose();pmrem.dispose();
-const key=new T.DirectionalLight(0xffedcb,1.30);key.position.set(-2.5,7,4.5);key.castShadow=true;key.shadow.mapSize.set(1024,1024);Object.assign(key.shadow.camera,{left:-5,right:5,top:5,bottom:-5,near:.5,far:22});key.shadow.bias=-.00025;key.shadow.normalBias=.016;key.shadow.radius=3;key.target.position.set(.1,.5,0);scene.add(key,key.target);const fill=new T.DirectionalLight(0xc0d7ef,.46);fill.position.set(5,3,1);scene.add(fill);const rim=new T.DirectionalLight(0xe1ddb3,1.0);rim.position.set(-1,4,-4);scene.add(rim);scene.add(new T.HemisphereLight(0xd8e0cf,0x364332,.51));
+const key=new T.DirectionalLight(0xffedcb,1.30);key.position.set(-2.5,7,4.5);key.castShadow=true;key.shadow.mapSize.set(1024,1024);Object.assign(key.shadow.camera,{left:-5,right:5,top:5,bottom:-5,near:.5,far:22});key.shadow.bias=-.00025;key.shadow.normalBias=.016;key.shadow.radius=3;key.target.position.set(.1,.5,0);scene.add(key,key.target);const fill=new T.DirectionalLight(0xc0d7ef,.46);fill.position.set(5,3,1);scene.add(fill);const rim=new T.DirectionalLight(0xe1ddb3,1.0);rim.position.set(-1,4,-4);scene.add(rim);const ambient=new T.HemisphereLight(0xd8e0cf,0x364332,.51);scene.add(ambient);
 const fc=document.createElement('canvas');fc.width=fc.height=512;const fg=fc.getContext('2d');fg.fillStyle='#344237';fg.fillRect(0,0,512,512);for(let i=0;i<=16;i++){fg.strokeStyle=i%4===0?'rgba(183,199,152,.12)':'rgba(183,199,152,.05)';fg.lineWidth=i%4===0?1.3:1;fg.beginPath();fg.moveTo(i*32,0);fg.lineTo(i*32,512);fg.moveTo(0,i*32);fg.lineTo(512,i*32);fg.stroke();}const fade=fg.createRadialGradient(256,256,70,256,256,256);fade.addColorStop(0,'#000');fade.addColorStop(.62,'#000');fade.addColorStop(1,'rgba(0,0,0,0)');fg.globalCompositeOperation='destination-in';fg.fillStyle=fade;fg.fillRect(0,0,512,512);const ft=new T.CanvasTexture(fc);ft.encoding=T.sRGBEncoding;const floor=new T.Mesh(new T.PlaneGeometry(15,15).rotateX(-PI/2),new T.MeshStandardMaterial({map:ft,transparent:true,roughness:.93,metalness:.08,envMapIntensity:.2,depthWrite:false}));floor.receiveShadow=true;floor.position.y=.002;scene.add(floor);
 /* Procedural assembly. World Y is up; conveyor travel is +X; belt shafts are Z. */
 function createAssembly(T, renderer, scene) {
@@ -4655,7 +4673,7 @@ return{root,nodes,spin,parts,instrumentation,guards,setSwayVisual,materials:allM
 // Code Cinema's modeling/light principles adapted to a live offline r128 viewer:
 // shaped key, restrained cool fill, real edge geometry and deterministic microfinish.
 // The film kit's r160 runtime, temporal sampler and grading are NOT imported here.
-function createUltraFinish(T,A,renderer,scene,key,fill){
+function createUltraFinish(T,A,renderer,scene,key,fill,rim,ambient,floor){
  let detail=null,maps=null,studio=null;const baseEnvironment=scene.environment,original=new Map();
  const bounce=new T.PointLight(0xffca91,0,3,2);
  bounce.position.set(-.6,.26,1.05);scene.add(bounce);
@@ -4739,13 +4757,16 @@ function createUltraFinish(T,A,renderer,scene,key,fill){
    mat.needsUpdate=true;
   }
   key.shadow.radius=active?2:3;
-  fill.intensity=active?.34:.46;
+  key.intensity=active?1.72:1.30;rim.intensity=active?1.24:1.0;
+  fill.intensity=active?.28:.46;ambient.intensity=active?.36:.51;
+  floor.material.color.setHex(active?0x8d978b:0xffffff);
+  if(scene.fog)scene.fog.density=active?.019:.025;
   renderer.shadowMap.needsUpdate=true;
  }
  return{apply,syncEnvironment,get active(){return bounce.intensity>0;},get detail(){return detail;}};
 }
 const A=createAssembly(T,renderer,scene),PARTS=A.parts,PMAP=Object.fromEntries(PARTS.map(p=>[p.id,p]));
-const ultraFinish=createUltraFinish(T,A,renderer,scene,key,fill);
+const ultraFinish=createUltraFinish(T,A,renderer,scene,key,fill,rim,ambient,floor);
 // Documented catalog service *studies*, not a list of installed accessories.
 const SERVICE_STUDIES=Object.freeze({
  coupling:[['Oil sight glass','شیشهٔ بازدید روغن','02_coupling_oil_sight_glass_catalog_study'],['Fill plug','درپوش پرکردن','02_fill_plug_catalog_study'],['Fusible plugs','درپوش‌های ذوب‌شو','02_fusible_plug_catalog_study_0']],
@@ -4771,11 +4792,11 @@ function renderDriveFigures(){
 }
 renderDriveFigures();
 const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
-const S={idlerJam:false,beltSlip:false,demoTrip:false,guards:true,render:'solid',inside:false,section:false,back:false,play:!reduced,speed:1,auto:false,sel:null,hover:null,isolate:false,labels:true,userZoom:false,userPan:false,quality:'balanced',noBackstop:false,inspectDetail:false,inspectColors:true};
+const S={cinema:false,idlerJam:false,beltSlip:false,demoTrip:false,guards:true,render:'solid',inside:false,section:false,back:false,play:!reduced,speed:1,auto:false,sel:null,hover:null,isolate:false,labels:true,userZoom:false,userPan:false,quality:'balanced',noBackstop:false,inspectDetail:false,inspectColors:true};
 const mechanics=FreewheelMechanics.create({ratio:modelSpec.gearRatio,driverRadius:A.constants.driverRadius,drivenRadius:A.constants.drivenRadius,beltRadius:A.constants.beltRadius,rollbackLimit:A.constants.releasedAngle,inclineAngle:A.constants.inclineAngle});
 const gravityArrow=new T.ArrowHelper(new T.Vector3(-Math.cos(A.constants.inclineAngle),-Math.sin(A.constants.inclineAngle),0),new T.Vector3(),.44,0xdd8067,.075,.035);gravityArrow.name='gravity_component_helper';gravityArrow.visible=false;scene.add(gravityArrow);
 function updateGravityArrow(){gravityArrow.visible=S.back&&!S.sel&&!S.isolate&&expCur<.01;if(gravityArrow.visible){const load=A.crates.find(c=>c.visible&&c.children[0].material.opacity>.9)||A.crates[1];load.getWorldPosition(gravityArrow.position);gravityArrow.position.z+=.30;gravityArrow.position.y+=.025;}}
-let expTarget=0,expCur=0,dirty=true,contextLost=false,raf=0,insideRestore=null,exporting=false;
+let expTarget=0,expCur=0,dirty=true,contextLost=false,raf=0,insideRestore=null,exporting=false,cinemaRestore=null;
 let swayDisplay={carry:0,ret:0,latched:false,warning:false,failure:false};
 function syncSwayUI(){
  const fa=I18.isFa(),p=$('swayPanel');p.dir=fa?'rtl':'ltr';
@@ -4860,6 +4881,7 @@ function showCard(){$('mechanismReadout').hidden=S.sel!=='freewheel';const card=
  const extra=service.length?[[isFarsi?'دسترسی سرویس (مطالعه)':'SERVICE POINTS (STUDY)',service.map(item=>isFarsi?item[1]:item[0]).join(' · ')],[isFarsi?'وضعیت تجهیز سرویس':'SERVICE EVIDENCE',isFarsi?'نمونهٔ کاتالوگی/مفهومی · نصب واقعی نامعلوم':'CATALOG / CONCEPT STUDY · installed details unknown']]:[];
  rows.concat(extra,specRows.length?specRows:p.specs).forEach(([name,value])=>{const row=document.createElement('div');row.className='spec-row';const a=document.createElement('span'),b=document.createElement('b');a.textContent=name;b.textContent=value;row.append(a,b);$('cSpecs').append(row);});$('cNode').textContent=A.nodes[p.id].name+(isFa()?' · محور ':' · AXIS ')+p.axis;card.classList.add('open');card.inert=S.inside;}
 function selectPart(id){
+ if(id&&S.cinema)setCinema(false);
  if(id&&!PMAP[id])return;if(id==='freewheel'&&S.noBackstop)setBackstopInstalled(true);
  if(S.inside){if(id)enterInside(id);else exitInside(true);setPartsOpen(false);return;}
  if(id===S.sel){setPartsOpen(false);return;}
@@ -4875,6 +4897,7 @@ function applyExplode(){const k=smooth(expCur);for(const p of PARTS)A.nodes[p.id
 function setRender(mode){if(!['solid','xray','wire'].includes(mode))return;if(S.inside)return;S.render=mode;for(const b of $('segR').querySelectorAll('button')){const on=b.dataset.r===mode;b.classList.toggle('on',on);b.setAttribute('aria-pressed',String(on));}applyLook();}
 function setInspectionSpeed(value){S.speed=value;$('speed').value=value;$('spv').textContent=value.toFixed(2)+'×';paintRange($('speed'));}
 function enterInside(id){
+ if(S.cinema)setCinema(false);
  id=id||S.sel||'freewheel';if(!PMAP[id])return;if(id==='freewheel'&&S.noBackstop)setBackstopInstalled(true);
  if(!S.inside)insideRestore={sel:S.sel,isolate:S.isolate,play:S.play,speed:S.speed,auto:S.auto,section:S.section,render:S.render,userZoom:S.userZoom,userPan:S.userPan,camera:{...cam},expTarget,expCur};
  S.inside=true;S.sel=id;S.isolate=true;S.play=false;S.auto=false;S.section=false;S.render='solid';S.inspectDetail=id==='freewheel';S.inspectColors=true;S.hover=null;S.userZoom=S.userPan=false;expTarget=expCur=0;applyExplode();$('explode').value=0;$('exv').textContent='0%';paintRange($('explode'));setInspectionSpeed(.35);clearPreset();setPartsOpen(false);A.animate(mechanics.snapshot());
@@ -4915,10 +4938,11 @@ function updateInspectionMarkers(){
 }
 function fitView(){S.userZoom=S.userPan=false;dirty=true;}
 function resetAll(){
+ if(S.cinema)setCinema(false);
  if(inspector.isActive())inspector.disable();
  window.dispatchEvent(new Event('fw:reset-sway'));
  const qualityChanged=S.quality!=='balanced';
- Object.assign(S,{idlerJam:false,beltSlip:false,demoTrip:false,guards:true,render:'solid',inside:false,section:false,back:false,play:!reduced,speed:1,auto:false,sel:null,hover:null,isolate:false,labels:true,userZoom:false,userPan:false,quality:'balanced',noBackstop:false,inspectDetail:false,inspectColors:true});if(qualityChanged)setQuality('balanced');clearPreset('iso');insideRestore=null;expTarget=expCur=0;mechanics.reset();syncFaultUI();applyExplode();A.animate(mechanics.snapshot());cam.taz=HOME.az;cam.tel=HOME.el;cam.az=HOME.az;cam.el=HOME.el;$('explode').value=0;$('exv').textContent='0%';$('speed').value=1;$('spv').textContent='1.00×';paintRange($('explode'));paintRange($('speed'));setRender('solid');showCard();refreshUI();setPartsOpen(false);clearTimeout(toastTimer);$('toast').className='';canvas.classList.remove('hov');lastPhase='drive';updateMonitor(mechanics.snapshot());
+ Object.assign(S,{cinema:false,idlerJam:false,beltSlip:false,demoTrip:false,guards:true,render:'solid',inside:false,section:false,back:false,play:!reduced,speed:1,auto:false,sel:null,hover:null,isolate:false,labels:true,userZoom:false,userPan:false,quality:'balanced',noBackstop:false,inspectDetail:false,inspectColors:true});if(qualityChanged)setQuality('balanced');clearPreset('iso');insideRestore=null;expTarget=expCur=0;mechanics.reset();syncFaultUI();applyExplode();A.animate(mechanics.snapshot());cam.taz=HOME.az;cam.tel=HOME.el;cam.az=HOME.az;cam.el=HOME.el;$('explode').value=0;$('exv').textContent='0%';$('speed').value=1;$('spv').textContent='1.00×';paintRange($('explode'));paintRange($('speed'));setRender('solid');showCard();refreshUI();setPartsOpen(false);clearTimeout(toastTimer);$('toast').className='';canvas.classList.remove('hov');lastPhase='drive';updateMonitor(mechanics.snapshot());
 }
 $('explode').addEventListener('input',e=>setExplode(e.target.value/100));
 $('speed').addEventListener('input',e=>{S.speed=clamp(Number(e.target.value),0,2.2);$('spv').textContent=S.speed.toFixed(2)+'×';paintRange(e.target);dirty=true;updateMonitor(mechanics.snapshot());});
@@ -4947,14 +4971,14 @@ $('bBack').addEventListener('click',()=>togglePowerCut(false));$('bPowerCut').ad
 $('segR').addEventListener('click',e=>{const b=e.target.closest('button');if(b)setRender(b.dataset.r);});
 $('bAuto').addEventListener('click',()=>{S.auto=!S.auto;if(S.auto)clearPreset();refreshUI();});$('bReset').addEventListener('click',resetAll);$('bFit').addEventListener('click',fitView);$('bFocus').addEventListener('click',fitView);
 $('bIsolate').addEventListener('click',()=>{if(!S.sel)return;S.isolate=!S.isolate;fitView();refreshUI();applyLook();});
-$('bGuard').addEventListener('click',()=>{S.guards=!S.guards;updateVisibility();refreshUI();});$('bLabels').addEventListener('click',()=>{S.labels=!S.labels;refreshUI();});$('bAll').addEventListener('click',()=>{selectPart(null);cam.taz=HOME.az;cam.tel=HOME.el;fitView();});$('cClose').addEventListener('click',()=>selectPart(null));$('bParts').addEventListener('click',()=>setPartsOpen(!$('sidebar').classList.contains('open')));$('bCloseParts').addEventListener('click',()=>setPartsOpen(false));
+$('bGuard').addEventListener('click',()=>{S.guards=!S.guards;updateVisibility();refreshUI();});$('bLabels').addEventListener('click',()=>{if(S.cinema){setCinema(false);return;}S.labels=!S.labels;refreshUI();});$('bAll').addEventListener('click',()=>{if(S.cinema)setCinema(false);selectPart(null);cam.taz=HOME.az;cam.tel=HOME.el;fitView();});$('cClose').addEventListener('click',()=>selectPart(null));$('bParts').addEventListener('click',()=>setPartsOpen(!$('sidebar').classList.contains('open')));$('bCloseParts').addEventListener('click',()=>setPartsOpen(false));
 $('bHelp').addEventListener('click',()=>{$('help').showModal();});$('bHelpClose').addEventListener('click',()=>$('help').close());$('help').addEventListener('click',e=>{if(e.target===$('help')){const b=$('help').getBoundingClientRect();if(e.clientX<b.left||e.clientX>b.right||e.clientY<b.top||e.clientY>b.bottom)$('help').close();}});
 function clearPreset(active){document.querySelectorAll('[data-view]').forEach(b=>b.classList.toggle('on',b.dataset.view===active));$('viewMode').textContent=t('viewPerspective');if(camera.fov!==37){camera.fov=37;camera.updateProjectionMatrix();dirty=true;}}
 // Code Cinema camera grammar: one deliberate three-quarter product shot, not
 // a different machine or a change to physical dimensions. No bundled r160 runtime.
 function viewPreset(v){return v==='hero'?{az:-1.05,el:.24,fov:30}:v==='front'?{az:0,el:.005,fov:37}:v==='top'?{az:HOME.az,el:PI/2-.015,fov:37}:{az:HOME.az,el:HOME.el,fov:37};}
-for(const b of document.querySelectorAll('[data-view]'))b.addEventListener('click',()=>{S.auto=false;setPressed('bAuto',false);const v=b.dataset.view,p=viewPreset(v);cam.taz=p.az;cam.tel=p.el;camera.fov=p.fov;camera.updateProjectionMatrix();fitView();document.querySelectorAll('[data-view]').forEach(x=>x.classList.toggle('on',x===b));$('viewMode').textContent=(v==='hero'?t('vHero'):v==='iso'?t('viewPerspective'):(v==='front'?t('vFront'):t('vTop')))+' · '+t('viewPerspective');});
-window.addEventListener('keydown',e=>{if(e.ctrlKey||e.altKey||e.metaKey||e.repeat)return;if($('help').open||$('maker').open||$('instPanel').open)return;if(e.target.closest('input,select,textarea,[contenteditable="true"]'))return;if(e.code==='Space'&&e.target.closest('button'))return;const key=e.key.toLowerCase();if(e.code==='Space'){e.preventDefault();S.play=!S.play;refreshUI();}else if(key==='escape'){setPartsOpen(false);selectPart(null);}else if(key==='r')resetAll();else if(key==='h')fitView();else if(key==='i')toggleInside();else if(key==='l'){S.labels=!S.labels;refreshUI();}else if(key==='g'){$('bGuard').click();}else if(key==='x')setExplode(expTarget>.5?0:1);else if(['1','2','3'].includes(key))setRender({1:'solid',2:'xray',3:'wire'}[key]);else if(key==='?')$('help').showModal();});
+for(const b of document.querySelectorAll('[data-view]'))b.addEventListener('click',()=>{if(S.cinema)setCinema(false);S.auto=false;setPressed('bAuto',false);const v=b.dataset.view,p=viewPreset(v);cam.taz=p.az;cam.tel=p.el;camera.fov=p.fov;camera.updateProjectionMatrix();fitView();document.querySelectorAll('[data-view]').forEach(x=>x.classList.toggle('on',x===b));$('viewMode').textContent=(v==='hero'?t('vHero'):v==='iso'?t('viewPerspective'):(v==='front'?t('vFront'):t('vTop')))+' · '+t('viewPerspective');});
+window.addEventListener('keydown',e=>{if(e.ctrlKey||e.altKey||e.metaKey||e.repeat)return;if($('help').open||$('maker').open||$('instPanel').open)return;if(e.target.closest('input,select,textarea,[contenteditable="true"]'))return;if(e.code==='Space'&&e.target.closest('button'))return;const key=e.key.toLowerCase();if(e.code==='Space'){e.preventDefault();S.play=!S.play;refreshUI();}else if(key==='escape'){setPartsOpen(false);selectPart(null);}else if(key==='r')resetAll();else if(key==='h')fitView();else if(key==='i')toggleInside();else if(key==='c')setCinema(!S.cinema);else if(key==='l'){if(S.cinema)setCinema(false);else{S.labels=!S.labels;refreshUI();}}else if(key==='g'){$('bGuard').click();}else if(key==='x')setExplode(expTarget>.5?0:1);else if(['1','2','3'].includes(key))setRender({1:'solid',2:'xray',3:'wire'}[key]);else if(key==='?')$('help').showModal();});
 /* Camera framing uses actual corner projections, not hard-coded browser dimensions. */
 let viewW=1,viewH=1,ultraMoving=false,ultraSettledAt=0;
 function compactCard(){return innerWidth<=760&&innerHeight>560;}
@@ -4967,6 +4991,7 @@ function ultraPixelRatio(){return Math.min(Math.max(1.75,devicePixelRatio||1),2.
 function ultraMotionPixelRatio(){return Math.min(ultraPixelRatio(),Math.max(1,ultraPixelRatio()*.72),Math.sqrt(1200000/Math.max(1,viewW*viewH)));}
 function setQuality(value){
  if(!['low','balanced','high','ultra'].includes(value))value='balanced';
+ if(value!=='ultra'&&S.cinema)setCinema(false);
  S.quality=value;ultraMoving=value==='ultra'&&S.play&&!S.inside;ultraSettledAt=performance.now();
  renderer.setPixelRatio(value==='ultra'?(ultraMoving?ultraMotionPixelRatio():ultraPixelRatio()):Math.min(devicePixelRatio||1,value==='high'?2:value==='low'?.75:1.5));
  renderer.shadowMap.enabled=value!=='low';
@@ -4974,9 +4999,31 @@ function setQuality(value){
  if(key.shadow.mapSize.x!==shadowSize){key.shadow.mapSize.set(shadowSize,shadowSize);if(key.shadow.map){key.shadow.map.dispose();key.shadow.map=null;}}
  ultraFinish.apply(value==='ultra',S.inside);
  renderer.shadowMap.needsUpdate=true;
- $('quality').value=value;resize();dirty=true;
+ $('quality').value=value;stage.classList.toggle('ultra-look',value==='ultra');resize();dirty=true;
 }
 $('quality').addEventListener('change',e=>setQuality(e.target.value));
+// Director's focus is opt-in. The engineering controls and annotations are
+// hidden only for this shot; selecting a part or changing quality restores them.
+function setCinema(on){
+ if(on===S.cinema)return;
+ if(on){
+  if(S.inside)exitInside(true);
+  cinemaRestore={sel:S.sel,labels:S.labels};
+  if(S.sel)selectPart(null);
+  S.cinema=true;S.labels=false;
+  if(S.quality!=='ultra')setQuality('ultra');
+  const pose=viewPreset('hero');cam.taz=pose.az;cam.tel=pose.el;
+  camera.fov=pose.fov;camera.updateProjectionMatrix();fitView();
+ }else{
+  S.cinema=false;S.labels=cinemaRestore?.labels??true;
+  const old=cinemaRestore?.sel;cinemaRestore=null;
+  if(old)selectPart(old);
+ }
+ stage.classList.toggle('cinema-mode',S.cinema);
+ setPressed('bCinema',S.cinema);refreshUI();dirty=true;
+}
+$('bCinema').addEventListener('click',()=>setCinema(!S.cinema));
+
 const boxTmp=new T.Box3(),corner=new T.Vector3(),dir=new T.Vector3(),right=new T.Vector3(),up=new T.Vector3(),center=new T.Vector3();
 function viewBounds(){if(S.inside)return inspector.focus().box;if(S.sel){const p=PMAP[S.sel];return p.bounds.clone().translate(p.explodeV.clone().multiplyScalar(smooth(expCur)));}const box=new T.Box3(new T.Vector3(-2.4,.02,-1.19),new T.Vector3(2.4,.14,1.43));for(const p of PARTS)box.union(boxTmp.copy(p.bounds).translate(p.explodeV.clone().multiplyScalar(smooth(expCur))));return box;}
 function fitDistance(box,c){
@@ -5130,6 +5177,10 @@ function frame(now){
 canvas.addEventListener('webglcontextlost',e=>{e.preventDefault();contextLost=true;$('fatalMessage').textContent='The graphics context was lost. Try a lower quality setting after reopening the file, or close other GPU-heavy tabs.';$('fatal').hidden=false;document.body.dataset.ready='context-lost';});canvas.addEventListener('webglcontextrestored',()=>{contextLost=false;$('fatal').hidden=true;document.body.dataset.ready='true';renderer.shadowMap.needsUpdate=true;dirty=true;last=performance.now();});
 document.addEventListener('visibilitychange',()=>{last=performance.now();dirty=true;});window.addEventListener('resize',resize);
 function localizeChrome(){
+ $('bCinemaText').textContent=isFa()?'استودیو':'STUDIO';$('bCinema').title=t('cinemaAria');$('bCinema').setAttribute('aria-label',t('cinemaAria'));
+ $('cinemaKicker').textContent=isFa()?'مطالعهٔ مفهومی / صنعت سیمان':'CEMENT DUTY / CONCEPT STUDY';
+ $('cinemaTitle').textContent=isFa()?'درایو نوار کلینکر':'CLINKER DRIVE';
+ $('cinemaCaveat').textContent=isFa()?'مدل نمایشی · تجهیز نصب‌شده تأیید نشده است':'Illustrative model · installed equipment unverified';
  for(const p of PARTS){
   p.labelEl.innerHTML='<i>'+p.num+'</i><span>'+pField(p,'short',p.short)+'</span>';
   p.rail.innerHTML='<i>'+p.num+'</i><span>'+pField(p,'short',p.short)+'</span>';

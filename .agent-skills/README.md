@@ -56,3 +56,23 @@ viewer**. Its sample backend and APIs require a compatibility review before
 use with this embedded Three.js r128 page. We used its scene-cost, GPU
 measurement and still-versus-motion DPR guidance. Agent skills are local
 instructions/tools, not new inherent assistant abilities or a GPU upgrade.
+
+## Cinematic direction and web-3D realism guidance
+
+Two additional MIT GitHub skills were inspected and installed as pinned,
+project-readable guidance, with local symlinks under `~/.claude/skills/`:
+
+- [`scene-direction`](scene-direction/SKILL.md) from
+  [`boranfurkan/scene-direction@ba6819f`](https://github.com/boranfurkan/scene-direction/tree/ba6819feafe3e9d2d1f9b490838dd5e0b657eebf)
+  ([license](scene-direction/LICENSE)): framing, contrast, legibility and
+  desktop/mobile visual critique. Its r187/Vite/postprocessing starter and
+  network asset fetcher are **not installed into the offline r128 viewer**.
+- [`web3d-realism-performance`](web3d-realism-performance/SKILL.md) from
+  [`saad-git-007/claude-skills@e5c50fb`](https://github.com/saad-git-007/claude-skills/tree/e5c50fbcd794bb4b205cc5234afcfedba6a8dfbd)
+  ([license](web3d-realism-performance/LICENSE)): material and lighting
+  evidence, screenshot review and GPU benchmark cautions. Its Cycles lightmap
+  workflow requires Blender and matching UV2 data that are **not available**
+  here; no baked lighting or real-hardware FPS claim is made.
+
+These are optional references and scripts, not an upgrade to the agent's
+underlying capabilities or a new renderer installed in the shipping page.

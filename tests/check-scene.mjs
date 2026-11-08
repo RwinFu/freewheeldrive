@@ -23,19 +23,19 @@ const assembly=runInNewContext(script.slice(begin,end)+'\ncreateAssembly(T,rende
  document:canvasDoc,FreewheelClutchGeometry:clutchGeometry,FreewheelDriveSpec:context.FreewheelDriveSpec,FreewheelSway:swayContext.FreewheelSway,console
 });
 // Exercise Ultra's real geometry/material lifecycle against both Three versions.
-const ultraStart=script.indexOf('function createUltraFinish(T,A,renderer,scene,key,fill){');
+const ultraStart=script.indexOf('function createUltraFinish(T,A,renderer,scene,key,fill,rim,ambient,floor){');
 const ultraEnd=script.indexOf('\nconst A=createAssembly(T,renderer,scene)',ultraStart);
 assert.ok(ultraStart>0&&ultraEnd>ultraStart,'missing Ultra implementation');
-const ultraScene=new THREE.Scene(),key=new THREE.DirectionalLight(),fill=new THREE.DirectionalLight();
-fill.intensity=.46;
+const ultraScene=new THREE.Scene(),key=new THREE.DirectionalLight(),fill=new THREE.DirectionalLight(),rim=new THREE.DirectionalLight(),ambient=new THREE.HemisphereLight(),floor=new THREE.Mesh(new THREE.PlaneGeometry(1,1),new THREE.MeshStandardMaterial());
+fill.intensity=.46;key.intensity=1.30;rim.intensity=1;ambient.intensity=.51;
 const renderCaps={capabilities:{getMaxAnisotropy:()=>8},shadowMap:{needsUpdate:false}};
 const ultraCode=script.slice(ultraStart,ultraEnd).replace(
  'const generator=new T.PMREMGenerator(renderer),target=generator.fromEquirectangular(source);',
  'const generator={dispose(){}},target={texture:new T.Texture()};');
 assert.notEqual(ultraCode,script.slice(ultraStart,ultraEnd));
 const ultra=runInNewContext(ultraCode+
- '\ncreateUltraFinish(T,A,renderer,scene,key,fill)',{
- T:THREE,A:assembly,renderer:renderCaps,scene:ultraScene,key,fill,document:canvasDoc
+ '\ncreateUltraFinish(T,A,renderer,scene,key,fill,rim,ambient,floor)',{
+ T:THREE,A:assembly,renderer:renderCaps,scene:ultraScene,key,fill,rim,ambient,floor,document:canvasDoc
 });
 const painted=assembly.materials.find(m=>m.userData.finishKey==='motor'&&m.roughnessMap);
 assert.ok(painted,'missing real cast material');
@@ -50,7 +50,7 @@ ultra.apply(false);
 assert.equal(ultra.active,false);assert.equal(ultraScene.environment,null);assert.equal(painted.roughnessMap,baseMap);
 assert.equal(painted.normalMap,baseNormal);
 assert.equal(assembly.root.getObjectByName('Ultra_motor_existing_flange_rim').parent.visible,false);
-assert.equal(fill.intensity,.46);
+assert.equal(fill.intensity,.46);assert.equal(key.intensity,1.30);assert.equal(ambient.intensity,.51);assert.equal(floor.material.color.getHex(),0xffffff);
 ultra.apply(true);assert.equal(ultra.detail,detail,'reselecting Ultra must not allocate another detail set');
 ultra.apply(false);
 // Inspection owns its own reflection environment. Switching quality there must

@@ -102,3 +102,26 @@ moving → paused → resumed resolution transitions and a full-resolution PNG;
 no page errors were observed. SwiftShader is software rendering: its timings
 cannot substantiate an FPS or GPU-efficiency claim for actual iGPUs/phones.
 No new as-built evidence was obtained.
+
+## Cinema-focus visual pass (2026-11-07)
+
+GitHub search found MIT [Scene Direction](https://github.com/boranfurkan/scene-direction/tree/ba6819feafe3e9d2d1f9b490838dd5e0b657eebf)
+and [Web3D Realism & Performance](https://github.com/saad-git-007/claude-skills/tree/e5c50fbcd794bb4b205cc5234afcfedba6a8dfbd);
+the pinned, licensed skill sources are in `.agent-skills/`. Their modern
+r187 web starter, network assets, and Blender Cycles lightmap workflow cannot
+be copied into this offline r128 viewer without migration, evidence and new
+assets. No actual plant photograph or measured mesh was supplied.
+
+The **STUDIO** button (`C`) is an explicit, reversible cinematic framing of
+this same concept assembly. It selects the 30° HERO camera and Ultra render,
+uses a darker surround and directed warm key/cool rim, and temporarily hides
+busy annotation/simulation panels without disabling their state. Its caption
+labels the hardware unverified in English/Persian. Exiting, inspecting a part,
+selecting another view, changing quality or resetting restores controls and
+previous labels. No engineering measurements or ratios are changed.
+
+Reviewed screenshots at 1280×800 and 390×720 using Chromium/SwiftShader;
+both showed the complete assembly, readable caveat and no page errors.
+Also exercised toggles, quality exit, part selection, Persian translation and
+reset. This is visual QA on software WebGL, **not** evidence of as-built
+realism, calibrated PBR materials or physical GPU performance.
