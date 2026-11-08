@@ -53,6 +53,18 @@ are not presented as such. For an offline movie use the separate film source
 below. Ultra is not photogrammetry or a verified reconstruction of installed
 hardware. If the browser or phone struggles, return to Balanced or Low.
 
+### Cinematic focus
+
+Press **STUDIO** in the viewport (or `C`) for an optional cinematic shot of
+this *same* assembly: it selects HERO framing and Ultra quality, simplifies
+annotations and the on-screen simulation panels, and adds a bilingual
+**concept / installed equipment unverified** caption. Press it again, select
+a component, switch views or quality, or reset to return to the normal
+engineering interface. The panels are hidden for presentation only; their
+simulation state is preserved. Materials, geometry and ratios remain
+illustrative, not an as-built photo match. See the
+[visual/toolchain audit](docs/toolchain-audit.md).
+
 ## Code Cinema film (concept only)
 
 A [7.2-second browser-rendered film with synthetic sound](films/clinker-drive/clinker-drive-concept.mp4)

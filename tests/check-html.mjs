@@ -27,5 +27,12 @@ assert.match(html,/function ultraMotionPixelRatio\(\).*1200000/);
 assert.match(html,/if\(upscale\)\{renderer\.setPixelRatio\(ultraPixelRatio\(\)\)/);
 assert.match(html,/if\(upscale\)\{renderer\.setPixelRatio\(ultraMotionPixelRatio\(\)\)/);
 assert.match(html,/o\.name\.startsWith\('Ultra_'\)/);
+// Director's focus must stay opt-in, bilingual, reversible and concept-labelled.
+for(const id of ['bCinema','cinemaPlate','cinemaKicker','cinemaCaveat'])assert.ok(html.includes(`id="${id}"`));
+assert.match(html,/function setCinema\(on\)/);
+assert.match(html,/if\(value!=='ultra'&&S\.cinema\)setCinema\(false\)/);
+assert.match(html,/if\(S\.cinema\)setCinema\(false\);\n if\(inspector\.isActive\(\)\)/);
+assert.match(html,/مدل نمایشی · تجهیز نصب‌شده تأیید نشده است/);
+
 
 console.log(`Validated ${scripts.length} scripts and ${count} assembly parts.`);
